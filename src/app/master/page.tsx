@@ -51,49 +51,33 @@ export default function Master() {
           </div>
         </div>
 
-        <button
-          onClick={calcularTokens}
-          disabled={calculando}
-          className='bg-green-700 text-white rounded-2xl p-4 font-medium shadow-sm disabled:opacity-50'
-        >
-          {calculando ? 'Calculando...' : '🪙 Calcular Tokens del Mes'}
+        <button onClick={calcularTokens} disabled={calculando} className='bg-green-700 text-white rounded-2xl p-4 font-medium shadow-sm disabled:opacity-50'>
+          {calculando ? 'Calculando...' : 'Calcular Tokens del Mes'}
         </button>
         {mensaje && <p className='text-center text-sm text-gray-600'>{mensaje}</p>}
 
         <div className='flex flex-col gap-3 mt-2'>
           <Link href='/master/catalogo'>
             <div className='bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between'>
-              <div className='flex items-center gap-3'>
-                <span className='text-2xl'>🌿</span>
-                <p className='font-medium text-gray-800'>Catalogo BIORED</p>
-              </div>
+              <p className='font-medium text-gray-800'>Catalogo BIORED</p>
               <span className='text-gray-300'>›</span>
             </div>
           </Link>
           <Link href='/master/biotokens'>
             <div className='bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between'>
-              <div className='flex items-center gap-3'>
-                <span className='text-2xl'>🎁</span>
-                <p className='font-medium text-gray-800'>Catalogo BioTokens</p>
-              </div>
+              <p className='font-medium text-gray-800'>Catalogo BioTokens</p>
               <span className='text-gray-300'>›</span>
             </div>
           </Link>
           <Link href='/master/usuarios'>
             <div className='bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between'>
-              <div className='flex items-center gap-3'>
-                <span className='text-2xl'>👥</span>
-                <p className='font-medium text-gray-800'>Usuarios</p>
-              </div>
+              <p className='font-medium text-gray-800'>Usuarios</p>
               <span className='text-gray-300'>›</span>
             </div>
           </Link>
           <Link href='/master/configuracion'>
             <div className='bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between'>
-              <div className='flex items-center gap-3'>
-                <span className='text-2xl'>⚙️</span>
-                <p className='font-medium text-gray-800'>Configuracion</p>
-              </div>
+              <p className='font-medium text-gray-800'>Configuracion</p>
               <span className='text-gray-300'>›</span>
             </div>
           </Link>
