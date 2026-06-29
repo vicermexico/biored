@@ -30,6 +30,14 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
     })
   }, [id])
 
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    const handleEnded = () => setVideoTerminado(true)
+    video.addEventListener('ended', handleEnded)
+    return () => video.removeEventListener('ended', handleEnded)
+  }, [producto])
+
   const handleAgregar = () => {
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]')
     const existe = carrito.find((i: any) => i.id === producto.id)
@@ -60,7 +68,6 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
               autoPlay
               playsInline
               disablePictureInPicture
-              onEnded={() => setVideoTerminado(true)}
               style={{ pointerEvents: 'none' }}
             />
           </div>
@@ -71,18 +78,10 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
                 <img src={todasLasFotos[fotoActiva]} className='w-full h-full object-cover' />
                 {todasLasFotos.length > 1 && (
                   <>
-                    <button
-                      onClick={() => setFotoActiva(f => Math.max(0, f - 1))}
-                      disabled={fotoActiva === 0}
-                      className='absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full p-2 disabled:opacity-20'
-                    >
+                    <button onClick={() => setFotoActiva(f => Math.max(0, f - 1))} disabled={fotoActiva === 0} className='absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full p-2 disabled:opacity-20'>
                       <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' /></svg>
                     </button>
-                    <button
-                      onClick={() => setFotoActiva(f => Math.min(todasLasFotos.length - 1, f + 1))}
-                      disabled={fotoActiva === todasLasFotos.length - 1}
-                      className='absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full p-2 disabled:opacity-20'
-                    >
+                    <button onClick={() => setFotoActiva(f => Math.min(todasLasFotos.length - 1, f + 1))} disabled={fotoActiva === todasLasFotos.length - 1} className='absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full p-2 disabled:opacity-20'>
                       <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' /></svg>
                     </button>
                     <div className='absolute bottom-2 left-0 right-0 flex justify-center gap-1'>
