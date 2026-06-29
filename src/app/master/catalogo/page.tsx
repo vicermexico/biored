@@ -84,6 +84,10 @@ export default function MasterCatalogo() {
     if (res.ok) cargarProductos()
   }
 
+  const handleCancelar = () => {
+    if (confirm('¿Seguro que quieres cancelar? Se perderán los cambios.')) resetForm()
+  }
+
   const resetForm = () => {
     setForm({ nombre: '', descripcion_corta: '', descripcion_larga: '', precio: '', foto_url: '', video_url: '', fotos_adicionales: [] })
     setModo('ninguno')
@@ -153,7 +157,7 @@ export default function MasterCatalogo() {
 
             <div className='flex gap-2'>
               <Button onClick={handleGuardar} disabled={!!subiendo} className='flex-1 bg-green-700 hover:bg-green-800 text-white rounded-xl py-6'>Guardar</Button>
-              <Button onClick={resetForm} className='flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl py-6'>Cancelar</Button>
+              <Button onClick={handleCancelar} className='flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl py-6'>Cancelar</Button>
             </div>
           </div>
         ) : cargando ? (
