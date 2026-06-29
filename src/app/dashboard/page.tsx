@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import NavBar from '@/components/NavBar'
 
 export default function Dashboard() {
   const [usuario, setUsuario] = useState<any>(null)
@@ -12,13 +13,15 @@ export default function Dashboard() {
   useEffect(() => {
     const u = localStorage.getItem('usuario')
     if (!u) { router.push('/login'); return }
-    setUsuario(JSON.parse(u))
+    const usr = JSON.parse(u)
+    setUsuario(usr)
+    fetch('/api/tokens/saldo?usuario_id=' + usr.id).then(r => r.json()).then(d => setTokens(d.saldo || 0)).catch(() => {})
   }, [])
 
   if (!usuario) return <div className='min-h-screen flex items-center justify-center'><p className='text-gray-400'>Cargando...</p></div>
 
   return (
-    <main className='min-h-screen bg-gray-50'>
+    <main className='min-h-screen bg-gray-50 pb-24'>
       <div className='bg-green-700 px-6 pt-10 pb-6'>
         <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
         <p className='text-green-200 text-sm'>Bienvenido a BIORED</p>
@@ -47,12 +50,7 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
-      <nav className='fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around py-3 px-6'>
-        <Link href='/dashboard' className='flex flex-col items-center gap-1'><span className='text-xl'>🏠</span><span className='text-xs text-green-700 font-medium'>Inicio</span></Link>
-        <Link href='/pedidos' className='flex flex-col items-center gap-1'><span className='text-xl'>📦</span><span className='text-xs text-gray-400'>Pedidos</span></Link>
-        <Link href='/red' className='flex flex-col items-center gap-1'><span className='text-xl'>🌐</span><span className='text-xs text-gray-400'>Mi Red</span></Link>
-        <Link href='/perfil' className='flex flex-col items-center gap-1'><span className='text-xl'>👤</span><span className='text-xs text-gray-400'>Perfil</span></Link>
-      </nav>
+      <NavBar />
     </main>
   )
 }

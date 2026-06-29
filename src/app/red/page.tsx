@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import NavBar from '@/components/NavBar'
 
 export default function MiRed() {
   const [nivelActivo, setNivelActivo] = useState(1)
@@ -18,7 +17,6 @@ export default function MiRed() {
   }, [])
 
   const copiarLink = () => { navigator.clipboard.writeText(link); alert('Link copiado!') }
-
   const nivel1 = red.map((r: any) => r.usuarios)
 
   return (
@@ -29,30 +27,43 @@ export default function MiRed() {
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='flex gap-2 overflow-x-auto pb-1'>
-          {[1,2,3,4,5].map(n => (<button key={n} onClick={() => setNivelActivo(n)} className={'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ' + (nivelActivo === n ? 'bg-green-700 text-white' : 'bg-white text-gray-500 border border-gray-200')}>Nivel {n}</button>))}
+          {[1,2,3,4,5].map(n => (
+            <button key={n} onClick={() => setNivelActivo(n)} className={'px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ' + (nivelActivo === n ? 'bg-green-700 text-white' : 'bg-white text-gray-500 border border-gray-200')}>
+              Nivel {n}
+            </button>
+          ))}
         </div>
         <div className='flex flex-col gap-3'>
-          {cargando ? (<div className='bg-gray-200 rounded-2xl h-16 animate-pulse'></div>) : nivelActivo === 1 && nivel1.length === 0 ? (
-            <div className='bg-white rounded-2xl p-8 shadow-sm text-center'><p className='text-4xl mb-3'>🌐</p><p className='text-gray-500 text-sm'>Aun no tienes invitados en este nivel</p></div>
+          {cargando ? (
+            <div className='bg-gray-200 rounded-2xl h-16 animate-pulse'></div>
+          ) : nivelActivo === 1 && nivel1.length === 0 ? (
+            <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
+              <p className='text-4xl mb-3'>🌐</p>
+              <p className='text-gray-400 text-sm'>Aun no tienes invitados en este nivel</p>
+            </div>
           ) : nivelActivo === 1 ? (
-            nivel1.map((inv: any, i: number) => (
+            nivel1.map((u: any, i: number) => (
               <div key={i} className='bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center'>
-                <div><p className='font-medium text-gray-800'>{inv.nombre}</p><p className='text-xs text-gray-400'>{inv.celular}</p></div>
-                <span className={'text-xs font-medium px-3 py-1 rounded-full ' + (inv.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400')}>{inv.activo ? 'Activo' : 'Inactivo'}</span>
+                <div>
+                  <p className='font-medium text-gray-800'>{u?.nombre || 'Usuario'}</p>
+                  <p className='text-sm text-gray-400'>{u?.celular}</p>
+                </div>
+                <span className={'text-xs font-medium px-3 py-1 rounded-full ' + (u?.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400')}>
+                  {u?.activo ? 'Activo' : 'Inactivo'}
+                </span>
               </div>
             ))
           ) : (
-            <div className='bg-white rounded-2xl p-8 shadow-sm text-center'><p className='text-4xl mb-3'>🌐</p><p className='text-gray-500 text-sm'>Aun no tienes invitados en este nivel</p></div>
+            <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
+              <p className='text-gray-400 text-sm'>Aun no tienes invitados en este nivel</p>
+            </div>
           )}
         </div>
-        <Button onClick={copiarLink} className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 rounded-2xl'>Invita a un amigo</Button>
+        <button onClick={copiarLink} className='w-full bg-red-500 text-white rounded-2xl p-4 font-medium'>
+          Invita a un amigo
+        </button>
       </div>
-      <nav className='fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around py-3 px-6'>
-        <Link href='/dashboard' className='flex flex-col items-center gap-1'><span className='text-xl'>🏠</span><span className='text-xs text-gray-400'>Inicio</span></Link>
-        <Link href='/pedidos' className='flex flex-col items-center gap-1'><span className='text-xl'>📦</span><span className='text-xs text-gray-400'>Pedidos</span></Link>
-        <Link href='/red' className='flex flex-col items-center gap-1'><span className='text-xl'>🌐</span><span className='text-xs text-green-700 font-medium'>Mi Red</span></Link>
-        <Link href='/perfil' className='flex flex-col items-center gap-1'><span className='text-xl'>👤</span><span className='text-xs text-gray-400'>Perfil</span></Link>
-      </nav>
+      <NavBar />
     </main>
   )
 }

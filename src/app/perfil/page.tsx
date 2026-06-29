@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import NavBar from '@/components/NavBar'
 
 export default function Perfil() {
   const [usuario, setUsuario] = useState<any>(null)
@@ -43,7 +44,9 @@ export default function Perfil() {
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='bg-white rounded-2xl p-6 shadow-sm flex flex-col items-center gap-3'>
-          <div className='w-20 h-20 rounded-full bg-green-100 flex items-center justify-center text-4xl'>👤</div>
+          <div className='w-20 h-20 rounded-full bg-green-100 flex items-center justify-center'>
+            <svg xmlns='http://www.w3.org/2000/svg' className='w-10 h-10 text-green-700' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' /></svg>
+          </div>
           <button className='text-sm text-green-700 font-medium'>Cambiar foto</button>
         </div>
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4'>
@@ -54,7 +57,7 @@ export default function Perfil() {
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Celular</label>
-            <input type='tel' value={celular} onChange={e => setCelular(e.target.value)} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+            <input type='tel' value={celular} onChange={e => { const val = e.target.value.replace(/\D/g, ''); if (val.length <= 10) setCelular(val) }} maxLength={10} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Correo</label>
@@ -69,12 +72,7 @@ export default function Perfil() {
         <button onClick={() => { localStorage.removeItem('usuario'); router.push('/') }} className='text-center text-sm text-gray-400 py-2'>Cerrar sesion</button>
         <button onClick={handleEliminar} className='text-center text-sm text-red-400 py-2'>Eliminar mi cuenta</button>
       </div>
-      <nav className='fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around py-3 px-6'>
-        <a href='/dashboard' className='flex flex-col items-center gap-1'><span className='text-xl'>🏠</span><span className='text-xs text-gray-400'>Inicio</span></a>
-        <a href='/pedidos' className='flex flex-col items-center gap-1'><span className='text-xl'>📦</span><span className='text-xs text-gray-400'>Pedidos</span></a>
-        <a href='/red' className='flex flex-col items-center gap-1'><span className='text-xl'>🌐</span><span className='text-xs text-gray-400'>Mi Red</span></a>
-        <a href='/perfil' className='flex flex-col items-center gap-1'><span className='text-xl'>👤</span><span className='text-xs text-green-700 font-medium'>Perfil</span></a>
-      </nav>
+      <NavBar />
     </main>
   )
 }
