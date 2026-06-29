@@ -1,8 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 export default function MasterCatalogo() {
+  const router = useRouter()
   const [productos, setProductos] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
   const [subiendo, setSubiendo] = useState(false)
@@ -10,9 +12,7 @@ export default function MasterCatalogo() {
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [form, setForm] = useState({ nombre: '', descripcion_corta: '', descripcion_larga: '', precio: '', foto_url: '', video_url: '' })
 
-  useEffect(() => {
-    cargarProductos()
-  }, [])
+  useEffect(() => { cargarProductos() }, [])
 
   const cargarProductos = () => {
     fetch('/api/master/productos/biored').then(r => r.json()).then(data => { setProductos(data); setCargando(false) })
@@ -35,7 +35,6 @@ export default function MasterCatalogo() {
     if (!form.nombre || !form.precio) return
     if (modo === 'agregar') {
       const res = await fetch('/api/master/productos/biored', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-      const data = await res.json()
       if (res.ok) { cargarProductos(); resetForm() }
     } else if (modo === 'editar' && editandoId) {
       const res = await fetch('/api/master/productos/biored', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editandoId, ...form }) })
@@ -63,9 +62,12 @@ export default function MasterCatalogo() {
 
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-green-700 px-6 pt-10 pb-6 flex justify-between items-end'>
-        <div><h1 className='text-2xl font-bold text-white'>Catalogo BIORED</h1><p className='text-green-200 text-sm'>{productos.length} productos</p></div>
-        <button onClick={() => { resetForm(); setModo('agregar') }} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>+ Agregar</button>
+      <div className='bg-green-700 px-6 pt-10 pb-6'>
+        <button onClick={() => router.push('/master')} className='text-green-200 text-sm mb-2 block'>← Panel Master</button>
+        <div className='flex justify-between items-end'>
+          <div><h1 className='text-2xl font-bold text-white'>Catalogo BIORED</h1><p className='text-green-200 text-sm'>{productos.length} productos</p></div>
+          <button onClick={() => { resetForm(); setModo('agregar') }} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>+ Agregar</button>
+        </div>
       </div>
       <div className='px-6 py-6 flex flex-col gap-3'>
         {(modo === 'agregar' || modo === 'editar') && (

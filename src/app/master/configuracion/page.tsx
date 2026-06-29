@@ -1,8 +1,10 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 export default function MasterConfiguracion() {
+  const router = useRouter()
   const [whatsapp, setWhatsapp] = useState('8112345678')
   const [guardado, setGuardado] = useState(false)
 
@@ -14,6 +16,7 @@ export default function MasterConfiguracion() {
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
       <div className='bg-green-700 px-6 pt-10 pb-6'>
+        <button onClick={() => router.push('/master')} className='text-green-200 text-sm mb-2 block'>← Panel Master</button>
         <h1 className='text-2xl font-bold text-white'>Configuracion</h1>
         <p className='text-green-200 text-sm'>Ajustes generales de BIORED</p>
       </div>
