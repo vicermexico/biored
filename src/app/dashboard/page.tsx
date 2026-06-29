@@ -1,4 +1,5 @@
 'use client'
+'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -16,6 +17,12 @@ export default function Dashboard() {
     const usr = JSON.parse(u)
     setUsuario(usr)
     fetch('/api/tokens/saldo?usuario_id=' + usr.id).then(r => r.json()).then(d => setTokens(d.saldo || 0)).catch(() => {})
+    fetch('/api/auth/perfil?id=' + usr.id).then(r => r.json()).then(d => {
+      if (d.usuario) {
+        setUsuario(d.usuario)
+        localStorage.setItem('usuario', JSON.stringify(d.usuario))
+      }
+    }).catch(() => {})
   }, [])
 
   const handleSalir = () => {
