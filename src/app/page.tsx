@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -7,31 +7,19 @@ export default function Home() {
   const [config, setConfig] = useState<any>(null)
   const [splash, setSplash] = useState(true)
   const [videoTerminado, setVideoTerminado] = useState(false)
-  const [videoRef, setVideoRef] = useState<HTMLVideoElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     fetch('/api/configuracion').then(r => r.json()).then(d => setConfig(d)).catch(() => {})
   }, [])
 
-  useEffect(() => {
-    if (!videoRef) return
-    const handleEnded = () => setVideoTerminado(true)
-    const handleTimeUpdate = () => {
-      if (videoRef.duration && videoRef.currentTime >= videoRef.duration - 0.3) {
-        setVideoTerminado(true)
-      }
-    }
-    videoRef.addEventListener('ended', handleEnded)
-    videoRef.addEventListener('timeupdate', handleTimeUpdate)
-    return () => {
-      videoRef.removeEventListener('ended', handleEnded)
-      videoRef.removeEventListener('timeupdate', handleTimeUpdate)
-    }
-  }, [videoRef])
-
   const handleEntrar = () => {
     setSplash(false)
-    if (videoRef) videoRef.play()
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play()
+      }
+    }, 100)
   }
 
   if (splash) {
@@ -54,11 +42,12 @@ export default function Home() {
     <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden'>
       {config?.video_url && !videoTerminado ? (
         <video
-          ref={el => setVideoRef(el)}
+          ref={videoRef}
           src={config.video_url}
           className='absolute inset-0 w-full h-full object-cover'
           playsInline
           muted
+          onEnded={() => setVideoTerminado(true)}
         />
       ) : config?.imagen_url ? (
         <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
