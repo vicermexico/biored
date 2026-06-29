@@ -13,6 +13,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!celular || !nip) { setError('Ingresa tu celular y NIP'); return }
+    if (celular.length !== 10) { setError('El celular debe tener 10 digitos'); return }
     setCargando(true)
     setError('')
     try {
@@ -38,7 +39,14 @@ export default function Login() {
           {error && <p className='text-red-500 text-sm text-center'>{error}</p>}
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Celular</label>
-            <input type='tel' value={celular} onChange={e => setCelular(e.target.value)} placeholder='10 digitos' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+            <input
+              type='tel'
+              value={celular}
+              onChange={e => { const val = e.target.value.replace(/\D/g, ''); if (val.length <= 10) setCelular(val) }}
+              placeholder='10 digitos'
+              maxLength={10}
+              className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500'
+            />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>NIP</label>
