@@ -1,18 +1,31 @@
 'use client'
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+
 export default function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [producto, setProducto] = useState<any>(null)
   const [cantidad, setCantidad] = useState(1)
+  const [videoTerminado, setVideoTerminado] = useState(false)
+  const [fotosAdicionales, setFotosAdicionales] = useState<string[]>([])
+  const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
+
   useEffect(() => {
     fetch('/api/productos/biored').then(r => r.json()).then(data => {
       const p = data.find((x: any) => x.id === id)
-      setProducto(p)
+      if (p) {
+        setProducto(p)
+        try {
+          const fotos = JSON.parse(p.fotos_adicionales || '[]')
+          setFotosAdicionales(fotos)
+        } catch { setFotosAdicionales([]) }
+        if (!p.video_url) setVideoTerminado(true)
+      }
     })
   }, [id])
+
   const handleAgregar = () => {
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]')
     const existe = carrito.find((i: any) => i.id === producto.id)
@@ -20,14 +33,50 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
     localStorage.setItem('carrito', JSON.stringify(carrito))
     router.push('/carrito')
   }
-  if (!producto) return <div className='min-h-screen flex items-center justify-center'><p className='text-gray-400'>Cargando...</p></div>
+
+  if (!producto) return (
+    <div className='min-h-screen flex items-center justify-center'>
+      <p className='text-gray-400'>Cargando...</p>
+    </div>
+  )
+
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-gray-100 h-64 flex items-center justify-center'>
-        {producto.foto_url ? <img src={producto.foto_url} alt={producto.nombre} className='w-full h-full object-cover' /> : <span className='text-8xl'>🌿</span>}
+      <div className='relative'>
+        {producto.video_url && !videoTerminado ? (
+          <div className='w-full bg-black'>
+            <video
+              ref={videoRef}
+              src={producto.video_url}
+              className='w-full max-h-96 object-contain'
+              autoPlay
+              playsInline
+              controls
+              onEnded={() => setVideoTerminado(true)}
+            />
+          </div>
+        ) : (
+          <div className='bg-gray-100 h-64 flex items-center justify-center'>
+            {producto.foto_url
+              ? <img src={producto.foto_url} alt={producto.nombre} className='w-full h-full object-cover' />
+              : <span className='text-8xl'>🌿</span>}
+          </div>
+        )}
       </div>
+
+      {videoTerminado && fotosAdicionales.length > 0 && (
+        <div className='px-6 pt-4 flex gap-3 overflow-x-auto'>
+          {fotosAdicionales.filter(f => f).map((foto, i) => (
+            <img key={i} src={foto} className='h-24 w-24 object-cover rounded-xl flex-shrink-0' />
+          ))}
+        </div>
+      )}
+
       <div className='px-6 py-6 flex flex-col gap-4'>
-        <div><h1 className='text-2xl font-bold text-gray-800'>{producto.nombre}</h1><p className='text-green-700 font-bold text-xl mt-1'></p></div>
+        <div>
+          <h1 className='text-2xl font-bold text-gray-800'>{producto.nombre}</h1>
+          <p className='text-green-700 font-bold text-xl mt-1'>${producto.precio}</p>
+        </div>
         <p className='text-gray-500 text-sm leading-relaxed'>{producto.descripcion_larga || producto.descripcion_corta}</p>
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4'>
           <div className='flex items-center justify-between'>
