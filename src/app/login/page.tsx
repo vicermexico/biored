@@ -20,7 +20,7 @@ export default function Login() {
       const data = await res.json()
       if (!res.ok) { setError(data.error); setCargando(false); return }
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
-      router.push('/dashboard')
+      if (data.usuario.celular === '8117474304') { router.push('/master') } else { router.push('/dashboard') }
     } catch (e) {
       setError('Error de conexion')
       setCargando(false)
