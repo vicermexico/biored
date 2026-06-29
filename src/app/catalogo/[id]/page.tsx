@@ -41,20 +41,22 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
   )
 
   return (
-    <main className='min-h-screen bg-black pb-24'>
+    <main className='min-h-screen bg-gray-50 pb-24'>
       {producto.video_url && !videoTerminado ? (
-        <div className='w-full h-screen flex items-center justify-center bg-black'>
+        <div className='w-full bg-black'>
           <video
             ref={videoRef}
             src={producto.video_url}
-            className='w-full h-full object-contain'
+            className='w-full'
             autoPlay
             playsInline
+            disablePictureInPicture
             onEnded={() => setVideoTerminado(true)}
+            style={{ pointerEvents: 'none' }}
           />
         </div>
       ) : (
-        <div className='min-h-screen bg-gray-50'>
+        <>
           <div className='relative'>
             <button onClick={() => router.back()} className='absolute top-4 left-4 z-10 bg-black bg-opacity-30 text-white rounded-full p-2'>
               <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' /></svg>
@@ -91,8 +93,9 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
               </div>
               <Button onClick={handleAgregar} className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>Agregar al carrito</Button>
             </div>
+            <button onClick={() => router.back()} className='text-center text-sm text-gray-400'>Volver al catalogo</button>
           </div>
-        </div>
+        </>
       )}
     </main>
   )
