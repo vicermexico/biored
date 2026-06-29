@@ -1,15 +1,24 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 export default function MasterConfiguracion() {
   const router = useRouter()
-  const [whatsapp, setWhatsapp] = useState('8112345678')
-  const [guardado, setGuardado] = useState(false)
-  const [subiendo, setSubiendo] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [imagenUrl, setImagenUrl] = useState('')
+  const [subiendo, setSubiendo] = useState('')
+  const [guardado, setGuardado] = useState(false)
+  const [cargando, setCargando] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/configuracion').then(r => r.json()).then(d => {
+      setWhatsapp(d.whatsapp_numero || '')
+      setVideoUrl(d.video_url || '')
+      setImagenUrl(d.imagen_url || '')
+    }).catch(() => {})
+  }, [])
 
   const subirArchivo = async (archivo: File, tipo: string) => {
     setSubiendo(tipo)
@@ -37,9 +46,14 @@ export default function MasterConfiguracion() {
     )
   }
 
-  const handleGuardar = () => {
-    setGuardado(true)
-    setTimeout(() => setGuardado(false), 2000)
+  const handleGuardar = async () => {
+    setCargando(true)
+    try {
+      await fetch('/api/configuracion', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ whatsapp, video_url: videoUrl, imagen_url: imagenUrl }) })
+      setGuardado(true)
+      setTimeout(() => setGuardado(false), 2000)
+    } catch {}
+    setCargando(false)
   }
 
   return (
@@ -68,8 +82,8 @@ export default function MasterConfiguracion() {
           <p className='font-medium text-gray-700'>WhatsApp de soporte</p>
           <input type='tel' value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder='Numero de WhatsApp' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
         </div>
-        <Button onClick={handleGuardar} className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>
-          Guardar cambios
+        <Button onClick={handleGuardar} disabled={cargando || !!subiendo} className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>
+          {cargando ? 'Guardando...' : 'Guardar cambios'}
         </Button>
       </div>
     </main>
