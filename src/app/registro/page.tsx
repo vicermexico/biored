@@ -16,6 +16,7 @@ export default function Registro() {
 
   const handleRegistro = async () => {
     if (!nombre || !celular || !nip) { setError('Nombre, celular y NIP son obligatorios'); return }
+    if (celular.length !== 10) { setError('El celular debe tener 10 digitos'); return }
     if (nip.length !== 4) { setError('El NIP debe ser de 4 digitos'); return }
     setCargando(true)
     setError('')
@@ -46,7 +47,14 @@ export default function Registro() {
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Celular</label>
-            <input type='tel' value={celular} onChange={e => setCelular(e.target.value)} placeholder='10 digitos' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+            <input
+              type='tel'
+              value={celular}
+              onChange={e => { const val = e.target.value.replace(/\D/g, ''); if (val.length <= 10) setCelular(val) }}
+              placeholder='10 digitos'
+              maxLength={10}
+              className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500'
+            />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Correo (opcional)</label>
