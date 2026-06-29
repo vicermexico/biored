@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
@@ -18,10 +18,8 @@ export default function MasterCatalogo() {
     fetch('/api/master/productos/biored').then(r => r.json()).then(data => { setProductos(data); setCargando(false) })
   }
 
-  const handleArchivo = async (e: React.ChangeEvent<HTMLInputElement>, campo: string, index?: number) => {
-    const archivo = e.target.files?.[0]
-    if (!archivo) return
-    setSubiendo(campo)
+  const subirArchivo = async (archivo: File, campo: string, index?: number) => {
+    setSubiendo(index !== undefined ? `foto_${index}` : campo)
     const formData = new FormData()
     formData.append('archivo', archivo)
     formData.append('carpeta', 'biored')
@@ -39,15 +37,25 @@ export default function MasterCatalogo() {
     setSubiendo('')
   }
 
+  const BotonSubir = ({ label, campo, accept, index }: { label: string, campo: string, accept: string, index?: number }) => {
+    const ref = useRef<HTMLInputElement>(null)
+    const key = index !== undefined ? `foto_${index}` : campo
+    return (
+      <div>
+        <input ref={ref} type='file' accept={accept} className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) subirArchivo(f, campo, index) }} />
+        <button onClick={() => ref.current?.click()} disabled={subiendo === key} className='bg-green-700 text-white text-sm px-4 py-2 rounded-xl font-medium disabled:opacity-50 w-full'>
+          {subiendo === key ? 'Subiendo...' : label}
+        </button>
+      </div>
+    )
+  }
+
   const agregarFotoAdicional = () => {
-    if (form.fotos_adicionales.length < 4) {
-      setForm(f => ({ ...f, fotos_adicionales: [...f.fotos_adicionales, ''] }))
-    }
+    if (form.fotos_adicionales.length < 4) setForm(f => ({ ...f, fotos_adicionales: [...f.fotos_adicionales, ''] }))
   }
 
   const eliminarFotoAdicional = (index: number) => {
-    const nuevas = form.fotos_adicionales.filter((_, i) => i !== index)
-    setForm(f => ({ ...f, fotos_adicionales: nuevas }))
+    setForm(f => ({ ...f, fotos_adicionales: f.fotos_adicionales.filter((_, i) => i !== index) }))
   }
 
   const handleGuardar = async () => {
@@ -107,16 +115,14 @@ export default function MasterCatalogo() {
             <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
               <p className='font-medium text-gray-700 text-sm'>Imagen principal de galería</p>
               <p className='text-xs text-gray-400'>Esta imagen es la que ve el usuario en el catálogo</p>
-              <input type='file' accept='image/*' onChange={e => handleArchivo(e, 'foto_url')} className='text-sm' />
-              {subiendo === 'foto_url' && <p className='text-xs text-gray-400'>Subiendo...</p>}
-              {form.foto_url && <img src={form.foto_url} className='h-32 w-32 object-cover rounded-xl' />}
+              <BotonSubir label='Subir imagen' campo='foto_url' accept='image/*' />
+              {form.foto_url && <img src={form.foto_url} className='h-32 w-32 object-cover rounded-xl mt-1' />}
             </div>
 
             <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
               <p className='font-medium text-gray-700 text-sm'>Video del producto (mp4)</p>
-              <p className='text-xs text-gray-400'>El video se reproduce al abrir el producto. Máx 50mb</p>
-              <input type='file' accept='video/mp4' onChange={e => handleArchivo(e, 'video_url')} className='text-sm' />
-              {subiendo === 'video_url' && <p className='text-xs text-gray-400'>Subiendo video...</p>}
+              <p className='text-xs text-gray-400'>Se reproduce al abrir el producto. Máx 50mb</p>
+              <BotonSubir label='Subir video mp4' campo='video_url' accept='video/mp4' />
               {form.video_url && <p className='text-xs text-green-600 font-medium'>✓ Video cargado</p>}
             </div>
 
@@ -124,23 +130,22 @@ export default function MasterCatalogo() {
               <div className='flex justify-between items-center'>
                 <div>
                   <p className='font-medium text-gray-700 text-sm'>Imágenes adicionales</p>
-                  <p className='text-xs text-gray-400'>Aparecen después del video. Máx 4 imágenes</p>
+                  <p className='text-xs text-gray-400'>Aparecen después del video. Máx 4</p>
                 </div>
                 {form.fotos_adicionales.length < 4 && (
                   <button onClick={agregarFotoAdicional} className='bg-green-700 text-white text-xs px-3 py-2 rounded-xl font-medium'>+ Agregar</button>
                 )}
               </div>
               {form.fotos_adicionales.length === 0 && (
-                <p className='text-xs text-gray-300 text-center py-4'>Sin imágenes adicionales</p>
+                <p className='text-xs text-gray-300 text-center py-2'>Sin imágenes adicionales</p>
               )}
               {form.fotos_adicionales.map((url, i) => (
                 <div key={i} className='border border-gray-100 rounded-xl p-3 flex flex-col gap-2'>
                   <div className='flex justify-between items-center'>
-                    <p className='text-xs text-gray-500'>Imagen {i + 1}</p>
+                    <p className='text-xs text-gray-500 font-medium'>Imagen {i + 1}</p>
                     <button onClick={() => eliminarFotoAdicional(i)} className='text-red-400 text-xs'>Quitar</button>
                   </div>
-                  <input type='file' accept='image/*' onChange={e => handleArchivo(e, 'fotos_adicionales', i)} className='text-sm' />
-                  {subiendo === `fotos_adicionales_${i}` && <p className='text-xs text-gray-400'>Subiendo...</p>}
+                  <BotonSubir label='Subir imagen' campo='fotos_adicionales' accept='image/*' index={i} />
                   {url && <img src={url} className='h-24 w-24 object-cover rounded-xl' />}
                 </div>
               ))}
