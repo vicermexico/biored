@@ -38,7 +38,6 @@ export default function MiRed() {
             <div className='bg-gray-200 rounded-2xl h-16 animate-pulse'></div>
           ) : nivelActivo === 1 && nivel1.length === 0 ? (
             <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
-              <p className='text-4xl mb-3'>🌐</p>
               <p className='text-gray-400 text-sm'>Aun no tienes invitados en este nivel</p>
             </div>
           ) : nivelActivo === 1 ? (
