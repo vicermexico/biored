@@ -1,54 +1,53 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const [config, setConfig] = useState<any>(null)
-  const [splash, setSplash] = useState(true)
-  const [videoTerminado, setVideoTerminado] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [fase, setFase] = useState<'splash' | 'video' | 'imagen' | 'botones'>('splash')
 
   useEffect(() => {
     fetch('/api/configuracion').then(r => r.json()).then(d => setConfig(d)).catch(() => {})
   }, [])
 
   const handleEntrar = () => {
-    setSplash(false)
-    setTimeout(() => {
-      const v = videoRef.current
-      if (v) {
-        v.play().catch(() => setVideoTerminado(true))
-        v.onended = () => setVideoTerminado(true)
-      } else {
-        setVideoTerminado(true)
-      }
-    }, 200)
+    if (config?.video_url) {
+      setFase('video')
+    } else if (config?.imagen_url) {
+      setFase('imagen')
+      setTimeout(() => setFase('botones'), 3000)
+    } else {
+      setFase('botones')
+    }
   }
 
   return (
-    <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden'>
-      {config?.video_url && !videoTerminado && (
+    <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-black'>
+
+      {fase === 'video' && config?.video_url && (
         <video
-          ref={videoRef}
           src={config.video_url}
-          className={`absolute inset-0 w-full h-full object-cover ${splash ? 'hidden' : ''}`}
+          className='absolute inset-0 w-full h-full object-cover'
+          autoPlay
           playsInline
           muted
-          preload='auto'
+          onEnded={() => {
+            if (config?.imagen_url) {
+              setFase('imagen')
+              setTimeout(() => setFase('botones'), 3000)
+            } else {
+              setFase('botones')
+            }
+          }}
         />
       )}
 
-      {(videoTerminado || !config?.video_url) && config?.imagen_url && (
+      {fase === 'imagen' && config?.imagen_url && (
         <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
       )}
 
-      {!config?.video_url && !config?.imagen_url && (
-        <div className='absolute inset-0 bg-black' />
-      )}
-
-      {splash && <div className='absolute inset-0 bg-black' />}
-      {!splash && <div className='absolute inset-0 bg-black bg-opacity-30' />}
+      <div className='absolute inset-0 bg-black bg-opacity-30' />
 
       <div className='relative z-10 flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
         <div className='text-center'>
@@ -56,11 +55,13 @@ export default function Home() {
           <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
         </div>
 
-        {splash ? (
+        {fase === 'splash' && (
           <button onClick={handleEntrar} className='w-full bg-white text-green-800 font-semibold py-6 text-base rounded-2xl'>
             Entrar
           </button>
-        ) : (
+        )}
+
+        {(fase === 'botones' || fase === 'imagen') && (
           <div className='flex flex-col gap-4 w-full'>
             <Link href='/login' className='w-full'>
               <Button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</Button>
