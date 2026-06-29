@@ -96,11 +96,11 @@ export default function MasterCatalogo() {
         <button onClick={() => router.push('/master')} className='text-green-200 text-sm mb-2 block'>← Panel Master</button>
         <div className='flex justify-between items-end'>
           <div><h1 className='text-2xl font-bold text-white'>Catalogo BIORED</h1><p className='text-green-200 text-sm'>{productos.length} productos</p></div>
-          <button onClick={() => { resetForm(); setModo('agregar') }} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>+ Agregar</button>
+          {modo === 'ninguno' && <button onClick={() => { resetForm(); setModo('agregar') }} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>+ Agregar</button>}
         </div>
       </div>
       <div className='px-6 py-6 flex flex-col gap-3'>
-        {(modo === 'agregar' || modo === 'editar') && (
+        {modo !== 'ninguno' ? (
           <div className='flex flex-col gap-4'>
             <p className='font-semibold text-gray-700 text-lg'>{modo === 'agregar' ? 'Nuevo producto' : 'Editar producto'}</p>
 
@@ -156,9 +156,9 @@ export default function MasterCatalogo() {
               <Button onClick={resetForm} className='flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl py-6'>Cancelar</Button>
             </div>
           </div>
-        )}
-
-        {cargando ? (<div className='bg-gray-200 rounded-2xl h-16 animate-pulse'></div>) : productos.length === 0 ? (
+        ) : cargando ? (
+          <div className='bg-gray-200 rounded-2xl h-16 animate-pulse'></div>
+        ) : productos.length === 0 ? (
           <div className='bg-white rounded-2xl p-8 shadow-sm text-center'><p className='text-gray-400 text-sm'>No hay productos</p></div>
         ) : (
           productos.map(p => (
