@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
@@ -7,6 +7,35 @@ export default function MasterConfiguracion() {
   const router = useRouter()
   const [whatsapp, setWhatsapp] = useState('8112345678')
   const [guardado, setGuardado] = useState(false)
+  const [subiendo, setSubiendo] = useState('')
+  const [videoUrl, setVideoUrl] = useState('')
+  const [imagenUrl, setImagenUrl] = useState('')
+
+  const subirArchivo = async (archivo: File, tipo: string) => {
+    setSubiendo(tipo)
+    const formData = new FormData()
+    formData.append('archivo', archivo)
+    formData.append('carpeta', 'configuracion')
+    const res = await fetch('/api/upload', { method: 'POST', body: formData })
+    const data = await res.json()
+    if (data.url) {
+      if (tipo === 'video') setVideoUrl(data.url)
+      if (tipo === 'imagen') setImagenUrl(data.url)
+    }
+    setSubiendo('')
+  }
+
+  const BotonSubir = ({ label, tipo, accept }: { label: string, tipo: string, accept: string }) => {
+    const ref = useRef<HTMLInputElement>(null)
+    return (
+      <div>
+        <input ref={ref} type='file' accept={accept} className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) subirArchivo(f, tipo) }} />
+        <button onClick={() => ref.current?.click()} disabled={subiendo === tipo} className='bg-green-700 text-white text-sm px-4 py-2 rounded-xl font-medium disabled:opacity-50 w-full'>
+          {subiendo === tipo ? 'Subiendo...' : label}
+        </button>
+      </div>
+    )
+  }
 
   const handleGuardar = () => {
     setGuardado(true)
@@ -26,17 +55,13 @@ export default function MasterConfiguracion() {
           <p className='font-medium text-gray-700'>Pantalla de inicio</p>
           <div className='flex flex-col gap-2'>
             <label className='text-sm text-gray-500'>Video de inicio (mp4, max 50mb)</label>
-            <div className='border-2 border-dashed border-gray-200 rounded-xl p-6 text-center'>
-              <p className='text-3xl mb-2'>🎥</p>
-              <p className='text-sm text-gray-400'>Toca para subir video</p>
-            </div>
+            <BotonSubir label='Subir video mp4' tipo='video' accept='video/mp4' />
+            {videoUrl && <p className='text-xs text-green-600 font-medium'>✓ Video cargado</p>}
           </div>
           <div className='flex flex-col gap-2'>
             <label className='text-sm text-gray-500'>Imagen de fondo (jpg/png, max 50mb)</label>
-            <div className='border-2 border-dashed border-gray-200 rounded-xl p-6 text-center'>
-              <p className='text-3xl mb-2'>🖼️</p>
-              <p className='text-sm text-gray-400'>Toca para subir imagen</p>
-            </div>
+            <BotonSubir label='Subir imagen' tipo='imagen' accept='image/*' />
+            {imagenUrl && <img src={imagenUrl} className='h-32 w-32 object-cover rounded-xl mt-1' />}
           </div>
         </div>
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4'>
