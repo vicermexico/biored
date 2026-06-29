@@ -8,7 +8,8 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
   const [producto, setProducto] = useState<any>(null)
   const [cantidad, setCantidad] = useState(1)
   const [videoTerminado, setVideoTerminado] = useState(false)
-  const [fotosAdicionales, setFotosAdicionales] = useState<string[]>([])
+  const [todasLasFotos, setTodasLasFotos] = useState<string[]>([])
+  const [fotoActiva, setFotoActiva] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
 
@@ -17,10 +18,13 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
       const p = data.find((x: any) => x.id === id)
       if (p) {
         setProducto(p)
+        const fotos: string[] = []
+        if (p.foto_url) fotos.push(p.foto_url)
         try {
-          const fotos = JSON.parse(p.fotos_adicionales || '[]')
-          setFotosAdicionales(fotos.filter((f: string) => f))
-        } catch { setFotosAdicionales([]) }
+          const adicionales = JSON.parse(p.fotos_adicionales || '[]')
+          adicionales.filter((f: string) => f).forEach((f: string) => fotos.push(f))
+        } catch {}
+        setTodasLasFotos(fotos)
         if (!p.video_url) setVideoTerminado(true)
       }
     })
@@ -61,21 +65,40 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
             />
           </div>
         ) : (
-          <div className='bg-gray-100 h-64'>
-            {producto.foto_url
-              ? <img src={producto.foto_url} alt={producto.nombre} className='w-full h-full object-cover' />
-              : <div className='w-full h-full flex items-center justify-center'><span className='text-8xl'>🌿</span></div>}
+          <div className='relative bg-gray-100 h-72 overflow-hidden'>
+            {todasLasFotos.length > 0 ? (
+              <>
+                <img src={todasLasFotos[fotoActiva]} className='w-full h-full object-cover' />
+                {todasLasFotos.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setFotoActiva(f => Math.max(0, f - 1))}
+                      disabled={fotoActiva === 0}
+                      className='absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full p-2 disabled:opacity-20'
+                    >
+                      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' /></svg>
+                    </button>
+                    <button
+                      onClick={() => setFotoActiva(f => Math.min(todasLasFotos.length - 1, f + 1))}
+                      disabled={fotoActiva === todasLasFotos.length - 1}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 text-white rounded-full p-2 disabled:opacity-20'
+                    >
+                      <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' /></svg>
+                    </button>
+                    <div className='absolute bottom-2 left-0 right-0 flex justify-center gap-1'>
+                      {todasLasFotos.map((_, i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full ${i === fotoActiva ? 'bg-white' : 'bg-white bg-opacity-50'}`} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className='w-full h-full flex items-center justify-center'><span className='text-8xl'>🌿</span></div>
+            )}
           </div>
         )}
       </div>
-
-      {videoTerminado && fotosAdicionales.length > 0 && (
-        <div className='px-4 pt-4 flex gap-3 overflow-x-auto'>
-          {fotosAdicionales.map((foto, i) => (
-            <img key={i} src={foto} className='h-24 w-24 object-cover rounded-xl flex-shrink-0' />
-          ))}
-        </div>
-      )}
 
       <div className='px-6 py-4 flex flex-col gap-4'>
         <div>
