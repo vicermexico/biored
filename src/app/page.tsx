@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const [config, setConfig] = useState<any>(null)
@@ -55,13 +54,13 @@ export default function Home() {
           style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
         />
         <div className='absolute inset-0 flex flex-col items-center justify-center gap-8 px-6'>
-          <h1 className='text-4xl font-bold text-white tracking-tight drop-shadow-lg'>DR BIO<span className='text-red-400'>RED</span></h1>
+          <h1 className='text-4xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
           <div className='w-full max-w-sm flex flex-col gap-3'>
             <Link href='/login' className='w-full'>
-              <Button className='w-full bg-white bg-opacity-90 text-green-800 hover:bg-opacity-100 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</Button>
+              <button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-4 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
             </Link>
             <Link href='/registro' className='w-full'>
-              <Button className='w-full bg-red-500 bg-opacity-90 hover:bg-opacity-100 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</Button>
+              <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-4 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
             </Link>
           </div>
         </div>
@@ -84,10 +83,10 @@ export default function Home() {
         </div>
         <div className='flex flex-col gap-4 w-full'>
           <Link href='/login' className='w-full'>
-            <Button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</Button>
+            <button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</button>
           </Link>
           <Link href='/registro' className='w-full'>
-            <Button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</Button>
+            <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</button>
           </Link>
         </div>
       </div>
