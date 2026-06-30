@@ -7,7 +7,6 @@ export default function Home() {
   const [config, setConfig] = useState<any>(null)
   const [iniciado, setIniciado] = useState(false)
   const [videoTerminado, setVideoTerminado] = useState(false)
-  const [videoListo, setVideoListo] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -17,18 +16,10 @@ export default function Home() {
   const handleEntrar = () => {
     setIniciado(true)
     const v = videoRef.current
-    console.log('video element:', v)
-    console.log('config.video_url:', config?.video_url)
     if (v) {
       v.currentTime = 0
-      v.play().then(() => {
-        console.log('video reproduciendo OK')
-      }).catch((err) => {
-        console.log('error al reproducir:', err)
-        setVideoTerminado(true)
-      })
+      v.play().catch(() => setVideoTerminado(true))
     } else {
-      console.log('no hay elemento video')
       setVideoTerminado(true)
     }
   }
@@ -40,12 +31,12 @@ export default function Home() {
         <video
           ref={videoRef}
           src={config.video_url}
-          className={`absolute inset-0 w-full h-full object-cover ${iniciado && !videoTerminado ? '' : 'hidden'}`}
+          className='absolute inset-0 w-full h-full object-cover'
+          style={{ display: iniciado && !videoTerminado ? 'block' : 'none' }}
           playsInline
           muted
           preload='auto'
           onEnded={() => setVideoTerminado(true)}
-          onCanPlayThrough={() => setVideoListo(true)}
         />
       )}
 
