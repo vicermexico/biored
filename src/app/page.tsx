@@ -73,20 +73,19 @@ export default function Home() {
       {config?.imagen_url ? (
         <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
       ) : (
-        <div className='absolute inset-0 bg-black' />
+        <div className='absolute inset-0 bg-white' />
       )}
-      <div className='absolute inset-0 bg-black bg-opacity-30' />
       <div className='relative z-10 flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
         <div className='text-center'>
-          <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
-          <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
+          <h1 className='text-5xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
+          <p className='text-white mt-2 text-sm opacity-90' style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>Tu red de bienestar</p>
         </div>
         <div className='flex flex-col gap-4 w-full'>
           <Link href='/login' className='w-full'>
-            <button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</button>
+            <button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
           </Link>
           <Link href='/registro' className='w-full'>
-            <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</button>
+            <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
           </Link>
         </div>
       </div>
