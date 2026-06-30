@@ -1,45 +1,49 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const [config, setConfig] = useState<any>(null)
   const [fase, setFase] = useState<'splash' | 'video' | 'imagen' | 'botones'>('splash')
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     fetch('/api/configuracion').then(r => r.json()).then(d => setConfig(d)).catch(() => {})
   }, [])
 
   const handleEntrar = () => {
-    if (config?.video_url) {
+    if (config?.video_url && videoRef.current) {
       setFase('video')
+      videoRef.current.play().catch(() => {
+        if (config?.imagen_url) setFase('imagen')
+        else setFase('botones')
+      })
     } else if (config?.imagen_url) {
       setFase('imagen')
-      setTimeout(() => setFase('botones'), 3000)
     } else {
       setFase('botones')
     }
   }
 
+  const handleVideoEnd = () => {
+    if (config?.imagen_url) setFase('imagen')
+    else setFase('botones')
+    setTimeout(() => setFase('botones'), 3000)
+  }
+
   return (
     <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-black'>
 
-      {fase === 'video' && config?.video_url && (
+      {config?.video_url && (
         <video
+          ref={videoRef}
           src={config.video_url}
-          className='absolute inset-0 w-full h-full object-cover'
-          autoPlay
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fase === 'video' ? 'opacity-100' : 'opacity-0'}`}
           playsInline
           muted
-          onEnded={() => {
-            if (config?.imagen_url) {
-              setFase('imagen')
-              setTimeout(() => setFase('botones'), 3000)
-            } else {
-              setFase('botones')
-            }
-          }}
+          preload='auto'
+          onEnded={handleVideoEnd}
         />
       )}
 
