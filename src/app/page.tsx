@@ -18,7 +18,7 @@ export default function Home() {
     const v = videoRef.current
     if (v) {
       v.currentTime = 0
-      v.play().then(() => console.log('PLAY OK')).catch((e) => { console.log('PLAY ERROR', e); setVideoTerminado(true) })
+      v.play().then(() => console.log('PLAY OK at', new Date().toISOString())).catch((e) => { console.log('PLAY ERROR', e); setVideoTerminado(true) })
     } else {
       console.log('NO VIDEO ELEMENT')
       setVideoTerminado(true)
@@ -37,7 +37,7 @@ export default function Home() {
           playsInline
           muted
           preload='auto'
-          onEnded={() => { console.log('VIDEO ENDED EVENT'); setVideoTerminado(true) }}
+          onEnded={() => { console.log('VIDEO ENDED EVENT at', new Date().toISOString()); setVideoTerminado(true) }}
         />
       )}
 
