@@ -46,7 +46,7 @@ export default function Home() {
 
   if (iniciado && !videoTerminado) {
     return (
-      <main className='min-h-screen bg-black'>
+      <main className='min-h-screen bg-black relative'>
         <video
           src={config.video_url}
           autoPlay
@@ -54,6 +54,17 @@ export default function Home() {
           onEnded={() => setVideoTerminado(true)}
           style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
         />
+        <div className='absolute inset-0 flex flex-col items-center justify-center gap-8 px-6'>
+          <h1 className='text-4xl font-bold text-white tracking-tight drop-shadow-lg'>DR BIO<span className='text-red-400'>RED</span></h1>
+          <div className='w-full max-w-sm flex flex-col gap-3'>
+            <Link href='/login' className='w-full'>
+              <Button className='w-full bg-white bg-opacity-90 text-green-800 hover:bg-opacity-100 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</Button>
+            </Link>
+            <Link href='/registro' className='w-full'>
+              <Button className='w-full bg-red-500 bg-opacity-90 hover:bg-opacity-100 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</Button>
+            </Link>
+          </div>
+        </div>
       </main>
     )
   }
