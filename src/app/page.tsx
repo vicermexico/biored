@@ -17,10 +17,18 @@ export default function Home() {
   const handleEntrar = () => {
     setIniciado(true)
     const v = videoRef.current
+    console.log('video element:', v)
+    console.log('config.video_url:', config?.video_url)
     if (v) {
       v.currentTime = 0
-      v.play().catch(() => setVideoTerminado(true))
+      v.play().then(() => {
+        console.log('video reproduciendo OK')
+      }).catch((err) => {
+        console.log('error al reproducir:', err)
+        setVideoTerminado(true)
+      })
     } else {
+      console.log('no hay elemento video')
       setVideoTerminado(true)
     }
   }
