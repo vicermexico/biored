@@ -1,31 +1,52 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const [config, setConfig] = useState<any>(null)
+  const [iniciado, setIniciado] = useState(false)
   const [videoTerminado, setVideoTerminado] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     fetch('/api/configuracion').then(r => r.json()).then(d => setConfig(d)).catch(() => {})
   }, [])
 
+  const handleEntrar = () => {
+    const v = videoRef.current
+    if (v) {
+      v.muted = true
+      const p = v.play()
+      if (p !== undefined) {
+        p.then(() => setIniciado(true)).catch(() => {
+          setIniciado(true)
+          setVideoTerminado(true)
+        })
+      } else {
+        setIniciado(true)
+      }
+    } else {
+      setIniciado(true)
+      setVideoTerminado(true)
+    }
+  }
+
   return (
     <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-black'>
 
-      {config?.video_url && !videoTerminado && (
+      {config?.video_url && (
         <video
+          ref={videoRef}
           src={config.video_url}
-          className='absolute inset-0 w-full h-full object-cover'
-          autoPlay
-          muted
+          className={`absolute inset-0 w-full h-full object-cover ${iniciado && !videoTerminado ? '' : 'hidden'}`}
           playsInline
+          muted
           onEnded={() => setVideoTerminado(true)}
         />
       )}
 
-      {(videoTerminado || !config?.video_url) && config?.imagen_url && (
+      {(videoTerminado || (!config?.video_url && config?.imagen_url)) && config?.imagen_url && (
         <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
       )}
 
@@ -36,14 +57,21 @@ export default function Home() {
           <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
           <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
         </div>
-        <div className='flex flex-col gap-4 w-full'>
-          <Link href='/login' className='w-full'>
-            <Button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</Button>
-          </Link>
-          <Link href='/registro' className='w-full'>
-            <Button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</Button>
-          </Link>
-        </div>
+
+        {!iniciado ? (
+          <button onClick={handleEntrar} className='w-full bg-white text-green-800 font-semibold py-6 text-base rounded-2xl'>
+            Entrar
+          </button>
+        ) : (
+          <div className='flex flex-col gap-4 w-full'>
+            <Link href='/login' className='w-full'>
+              <Button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl'>Ya tengo cuenta</Button>
+            </Link>
+            <Link href='/registro' className='w-full'>
+              <Button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl'>Se parte de nosotros</Button>
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   )
