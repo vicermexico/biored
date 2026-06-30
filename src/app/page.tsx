@@ -36,14 +36,17 @@ export default function Home() {
     <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-black'>
 
       {config?.video_url && (
-        <video
+       <video
           ref={videoRef}
           src={config.video_url}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${fase === 'video' ? 'opacity-100' : 'opacity-0'}`}
           playsInline
           muted
+          autoPlay
+          loop={false}
           preload='auto'
           onEnded={handleVideoEnd}
+          onCanPlay={() => { if (fase === 'video' && videoRef.current) videoRef.current.play().catch(() => {}) }}
         />
       )}
 
