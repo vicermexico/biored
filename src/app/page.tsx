@@ -7,6 +7,7 @@ export default function Home() {
   const [config, setConfig] = useState<any>(null)
   const [iniciado, setIniciado] = useState(false)
   const [videoTerminado, setVideoTerminado] = useState(false)
+  const [videoListo, setVideoListo] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -14,20 +15,12 @@ export default function Home() {
   }, [])
 
   const handleEntrar = () => {
+    setIniciado(true)
     const v = videoRef.current
     if (v) {
-      v.muted = true
-      const p = v.play()
-      if (p !== undefined) {
-        p.then(() => setIniciado(true)).catch(() => {
-          setIniciado(true)
-          setVideoTerminado(true)
-        })
-      } else {
-        setIniciado(true)
-      }
+      v.currentTime = 0
+      v.play().catch(() => setVideoTerminado(true))
     } else {
-      setIniciado(true)
       setVideoTerminado(true)
     }
   }
@@ -42,7 +35,9 @@ export default function Home() {
           className={`absolute inset-0 w-full h-full object-cover ${iniciado && !videoTerminado ? '' : 'hidden'}`}
           playsInline
           muted
+          preload='auto'
           onEnded={() => setVideoTerminado(true)}
+          onCanPlayThrough={() => setVideoListo(true)}
         />
       )}
 
