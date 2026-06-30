@@ -3,8 +3,7 @@ import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-export default function DetalleBiotoken({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function DetalleBiotoken({ params }: { params: Promise<{ id: string }> }) {  const { id } = use(params)
   const [producto, setProducto] = useState<any>(null)
   const [cantidad, setCantidad] = useState(1)
   const [tokensDisponibles, setTokensDisponibles] = useState(0)
@@ -59,11 +58,11 @@ export default function DetalleBiotoken({ params }: { params: Promise<{ id: stri
         </button>
 
         {producto.video_url && !videoTerminado ? (
-          <div className='w-full bg-black'>
+          <div className='w-full bg-black' style={{ height: '45vh' }}>
             <video
               ref={videoRef}
               src={producto.video_url}
-              className='w-full'
+              className='w-full h-full object-cover'
               autoPlay
               playsInline
               disablePictureInPicture
@@ -72,7 +71,7 @@ export default function DetalleBiotoken({ params }: { params: Promise<{ id: stri
             />
           </div>
         ) : (
-          <div className='relative bg-gray-100 h-72 overflow-hidden'>
+          <div className='relative bg-gray-100 overflow-hidden' style={{ height: '45vh' }}>
             {todasLasFotos.length > 0 ? (
               <>
                 <img src={todasLasFotos[fotoActiva]} className='w-full h-full object-cover' />
@@ -112,8 +111,7 @@ export default function DetalleBiotoken({ params }: { params: Promise<{ id: stri
             <div className='flex items-center gap-4'>
               <button onClick={() => setCantidad(Math.max(1, cantidad - 1))} className='w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-bold'>-</button>
               <span className='text-lg font-bold'>{cantidad}</span>
-              <button onClick={() => setCantidad(cantidad + 1)} className='w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-lg font-bold'>+</button>
-            </div>
+              <button onClick={() => setCantidad(cantidad + 1)} className='w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-lg font-bold'>+</button>            </div>
           </div>
           <Button onClick={handleAgregar} className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 rounded-2xl'>Agregar al carrito</Button>
         </div>
