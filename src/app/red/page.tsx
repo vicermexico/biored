@@ -13,7 +13,8 @@ export default function MiRed() {
     setLink(window.location.origin + '/registro?ref=' + usuario.id)
     fetch('/api/red?usuario_id=' + usuario.id).then(r => r.json()).then(data => { setRed(data); setCargando(false) })
   }, [])
-  const copiarLink = () => { navigator.clipboard.writeText(link); alert('Link copiado!') }  const nivel1 = red.map((r: any) => r.usuarios)
+  const copiarLink = () => { navigator.clipboard.writeText(link); alert('Link copiado!') }
+  const nivel1 = red.map((r: any) => r.usuarios)
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
       <div className='bg-gray-900 px-6 pt-10 pb-6'>
