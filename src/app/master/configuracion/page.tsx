@@ -39,7 +39,7 @@ export default function MasterConfiguracion() {
     return (
       <div>
         <input ref={ref} type='file' accept={accept} className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) subirArchivo(f, tipo) }} />
-        <button onClick={() => ref.current?.click()} disabled={subiendo === tipo} className='bg-green-700 text-white text-sm px-4 py-2 rounded-xl font-medium disabled:opacity-50 w-full'>
+        <button onClick={() => ref.current?.click()} disabled={subiendo === tipo} className='bg-gray-900 text-white text-sm px-4 py-2 rounded-xl font-medium disabled:opacity-50 w-full'>
           {subiendo === tipo ? 'Subiendo...' : label}
         </button>
       </div>
@@ -58,19 +58,19 @@ export default function MasterConfiguracion() {
 
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-green-700 px-6 pt-10 pb-6'>
-        <button onClick={() => router.push('/master')} className='text-green-200 text-sm mb-2 block'>← Panel Master</button>
+      <div className='bg-gray-900 px-6 pt-10 pb-6'>
+        <button onClick={() => router.push('/master')} className='text-gray-300 text-sm mb-2 block'>← Panel Master</button>
         <h1 className='text-2xl font-bold text-white'>Configuracion</h1>
-        <p className='text-green-200 text-sm'>Ajustes generales de BIORED</p>
+        <p className='text-gray-300 text-sm'>Ajustes generales de BIORED</p>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
-        {guardado && <p className='text-green-600 text-sm text-center font-medium bg-green-50 py-3 rounded-xl'>Guardado correctamente</p>}
+        {guardado && <p className='text-gray-700 text-sm text-center font-medium bg-gray-100 py-3 rounded-xl'>Guardado correctamente</p>}
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4'>
           <p className='font-medium text-gray-700'>Pantalla de inicio</p>
           <div className='flex flex-col gap-2'>
             <label className='text-sm text-gray-500'>Video de inicio (mp4, max 50mb)</label>
             <BotonSubir label='Subir video mp4' tipo='video' accept='video/mp4' />
-            {videoUrl && <p className='text-xs text-green-600 font-medium'>✓ Video cargado</p>}
+            {videoUrl && <p className='text-xs text-gray-700 font-medium'>✓ Video cargado</p>}
           </div>
           <div className='flex flex-col gap-2'>
             <label className='text-sm text-gray-500'>Imagen de fondo (jpg/png, max 50mb)</label>
@@ -80,9 +80,9 @@ export default function MasterConfiguracion() {
         </div>
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4'>
           <p className='font-medium text-gray-700'>WhatsApp de soporte</p>
-          <input type='tel' value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder='Numero de WhatsApp' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+          <input type='tel' value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder='Numero de WhatsApp' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-gray-500' />
         </div>
-        <Button onClick={handleGuardar} disabled={cargando || !!subiendo} className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>
+        <Button onClick={handleGuardar} disabled={cargando || !!subiendo} className='w-full bg-gray-900 hover:bg-black text-white font-semibold py-6 rounded-2xl'>
           {cargando ? 'Guardando...' : 'Guardar cambios'}
         </Button>
       </div>

@@ -33,17 +33,17 @@ export default function Registro() {
   }
 
   return (
-    <main className='min-h-screen bg-gradient-to-b from-green-700 to-green-900 flex flex-col items-center justify-center px-6'>
+    <main className='min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center px-6'>
       <div className='w-full max-w-sm flex flex-col gap-6'>
         <div className='text-center'>
           <h1 className='text-4xl font-bold text-white'>BIO<span className='text-red-400'>RED</span></h1>
-          <p className='text-green-200 mt-1 text-sm'>Crea tu cuenta</p>
+          <p className='text-gray-300 mt-1 text-sm'>Crea tu cuenta</p>
         </div>
         <div className='bg-white rounded-3xl p-6 flex flex-col gap-4'>
           {error && <p className='text-red-500 text-sm text-center'>{error}</p>}
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Nombre completo</label>
-            <input type='text' value={nombre} onChange={e => setNombre(e.target.value)} placeholder='Tu nombre' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+            <input type='text' value={nombre} onChange={e => setNombre(e.target.value)} placeholder='Tu nombre' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-gray-500' />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>Celular</label>
@@ -53,16 +53,15 @@ export default function Registro() {
               onChange={e => { const val = e.target.value.replace(/\D/g, ''); if (val.length <= 10) setCelular(val) }}
               placeholder='10 digitos'
               maxLength={10}
-              className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500'
+              className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-nonefocus:border-gray-500'
             />
           </div>
           <div className='flex flex-col gap-1'>
-            <label className='text-sm text-gray-600 font-medium'>Correo (opcional)</label>
-            <input type='email' value={correo} onChange={e => setCorreo(e.target.value)} placeholder='tu@correo.com' className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+            <label className='text-sm text-gray-600 font-medium'>Correo (opcional)</label>            <input type='email' value={correo} onChange={e => setCorreo(e.target.value)} placeholder='tu@correo.com' className='border border-gray-200 rounded-xl px-4 py-3 text-smoutline-none focus:border-gray-500' />
           </div>
           <div className='flex flex-col gap-1'>
             <label className='text-sm text-gray-600 font-medium'>NIP (4 digitos)</label>
-            <input type='password' value={nip} onChange={e => setNip(e.target.value)} placeholder='Elige tu NIP' maxLength={4} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
+            <input type='password' value={nip} onChange={e => setNip(e.target.value)} placeholder='Elige tu NIP' maxLength={4} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-gray-500' />
           </div>
           <Button onClick={handleRegistro} disabled={cargando} className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 rounded-2xl'>
             {cargando ? 'Registrando...' : 'Registrarme'}

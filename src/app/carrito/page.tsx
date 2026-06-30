@@ -16,7 +16,7 @@ export default function Carrito() {
 
   const tipo = items.length > 0 ? items[0].tipo : 'biored'
   const total = items.reduce((acc, i) => acc + (i.precio || 0) * i.cantidad, 0)
-  const totalTokens = items.reduce((acc, i) => acc + (i.precio_tokens || 0) * i.cantidad, 0)
+  const totalTokens = items.reduce((acc, i) => acc + (i.precio_tokens || 0) * i.cantidad,0)
   const totalCantidad = items.reduce((acc, i) => acc + i.cantidad, 0)
 
   const handlePedir = async () => {
@@ -35,7 +35,7 @@ export default function Carrito() {
 
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-green-700 px-6 pt-10 pb-6'>
+      <div className='bg-gray-900 px-6 pt-10 pb-6'>
         <h1 className='text-2xl font-bold text-white'>Mi Carrito</h1>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
@@ -52,12 +52,12 @@ export default function Carrito() {
                   <p className='font-medium text-sm'>{item.nombre}</p>
                   <p className='text-xs text-gray-400'>x{item.cantidad}</p>
                 </div>
-                <p className='font-bold text-green-700'>{item.tipo === 'biored' ? '$' + (item.precio || 0) * item.cantidad : (item.precio_tokens || 0) * item.cantidad + ' tokens'}</p>
+                <p className='font-bold text-gray-900'>{item.tipo === 'biored' ? '$' + (item.precio || 0) * item.cantidad : (item.precio_tokens || 0) * item.cantidad + ' tokens'}</p>
               </div>
             ))}
             <div className='flex justify-between items-center pt-2'>
               <p className='font-bold text-gray-800'>Total</p>
-              <p className='font-bold text-green-700 text-lg'>{tipo === 'biored' ? '$' + total : totalTokens + ' tokens'}</p>
+              <p className='font-bold text-gray-900 text-lg'>{tipo === 'biored' ? '$' + total : totalTokens + ' tokens'}</p>
             </div>
           </div>
         )}
@@ -65,12 +65,12 @@ export default function Carrito() {
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
           <p className='font-medium text-gray-700'>Donde recoges tu pedido?</p>
           {sucursales.map(s => (
-            <button key={s.id} onClick={() => setSucursal(s.id)} className={'w-full text-left px-4 py-3 rounded-xl border text-sm ' + (sucursal === s.id ? 'border-green-500 bg-green-50 text-green-700 font-medium' : 'border-gray-200 text-gray-600')}>
+            <button key={s.id} onClick={() => setSucursal(s.id)} className={'w-full text-left px-4 py-3 rounded-xl border text-sm ' + (sucursal === s.id ? 'border-gray-900 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 text-gray-600')}>
               {s.nombre}
             </button>
           ))}
         </div>
-        <Button onClick={handlePedir} disabled={cargando || items.length === 0} className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>
+        <Button onClick={handlePedir} disabled={cargando || items.length === 0} className='w-full bg-gray-900 hover:bg-black text-white font-semibold py-6 rounded-2xl'>
           {cargando ? 'Procesando...' : 'Pagar en efectivo en sucursal'}
         </Button>
       </div>

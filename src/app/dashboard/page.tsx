@@ -1,16 +1,13 @@
 'use client'
-'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import NavBar from '@/components/NavBar'
-
 export default function Dashboard() {
   const [usuario, setUsuario] = useState<any>(null)
   const [tokens, setTokens] = useState(0)
   const router = useRouter()
-
   useEffect(() => {
     const u = localStorage.getItem('usuario')
     if (!u) { router.push('/login'); return }
@@ -24,34 +21,31 @@ export default function Dashboard() {
       }
     }).catch(() => {})
   }, [])
-
   const handleSalir = () => {
     if (confirm('¿Seguro que quieres cerrar sesión?')) {
       localStorage.removeItem('usuario')
       router.push('/')
     }
   }
-
   if (!usuario) return <div className='min-h-screen flex items-center justify-center'><p className='text-gray-400'>Cargando...</p></div>
-
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-green-700 px-6 pt-10 pb-6 flex justify-between items-start'>
+      <div className='bg-gray-900 px-6 pt-10 pb-6 flex justify-between items-start'>
         <div>
           <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
-          <p className='text-green-200 text-sm'>Bienvenido a BIORED</p>
+          <p className='text-gray-300 text-sm'>Bienvenido a BIORED</p>
         </div>
-        <button onClick={handleSalir} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
+        <button onClick={handleSalir} className='bg-white text-gray-900 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='grid grid-cols-2 gap-4'>
           <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-400'>Mis Tokens</p>
-            <p className='text-3xl font-bold text-green-700'>{tokens}</p>
+            <p className='text-3xl font-bold text-gray-900'>{tokens}</p>
           </div>
           <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-400'>Invitados activos</p>
-            <p className='text-3xl font-bold text-green-700'>0</p>
+            <p className='text-3xl font-bold text-gray-900'>0</p>
           </div>
         </div>
         <div className='bg-white rounded-2xl p-4 shadow-sm'>
@@ -60,7 +54,7 @@ export default function Dashboard() {
         </div>
         <div className='flex flex-col gap-3'>
           <Link href='/catalogo'>
-            <Button className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>Catalogo BIORED</Button>
+            <Button className='w-full bg-gray-900 hover:bg-black text-white font-semibold py-6 rounded-2xl'>Catalogo BIORED</Button>
           </Link>
           <Link href='/biotokens'>
             <Button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 rounded-2xl'>Catalogo BioTokens</Button>

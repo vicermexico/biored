@@ -2,20 +2,17 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import NavBar from '@/components/NavBar'
-
 export default function Catalogo() {
   const [productos, setProductos] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
-
   useEffect(() => {
-    fetch('/api/productos/biored').then(r => r.json()).then(data => { setProductos(data); setCargando(false) }).catch(() => setCargando(false))
+    fetch('/api/productos/biored').then(r => r.json()).then(data => { setProductos(data);setCargando(false) }).catch(() => setCargando(false))
   }, [])
-
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-green-700 px-6 pt-10 pb-6'>
+      <div className='bg-gray-900 px-6 pt-10 pb-6'>
         <h1 className='text-2xl font-bold text-white'>Catalogo BIORED</h1>
-        <p className='text-green-200 text-sm'>Minimo 6 productos por compra</p>
+        <p className='text-gray-300 text-sm'>Minimo 6 productos por compra</p>
       </div>
       <div className='px-4 py-6 grid grid-cols-2 gap-4'>
         {cargando ? (
@@ -38,7 +35,7 @@ export default function Catalogo() {
                     <p className='font-semibold text-sm text-gray-800 leading-tight'>{p.nombre}</p>
                     <p className='text-xs text-gray-400 mt-1 leading-tight line-clamp-2'>{p.descripcion_corta}</p>
                   </div>
-                  <p className='text-green-700 font-bold text-sm mt-1'>${p.precio}</p>
+                  <p className='text-gray-900 font-bold text-sm mt-1'>${p.precio}</p>
                 </div>
               </div>
             </Link>

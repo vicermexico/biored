@@ -3,8 +3,7 @@ import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-export default function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {  const { id } = use(params)
   const [producto, setProducto] = useState<any>(null)
   const [cantidad, setCantidad] = useState(1)
   const [videoTerminado, setVideoTerminado] = useState(false)
@@ -102,7 +101,7 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
       <div className='px-6 py-4 flex flex-col gap-4'>
         <div>
           <h1 className='text-2xl font-bold text-gray-800'>{producto.nombre}</h1>
-          <p className='text-green-700 font-bold text-xl mt-1'>${producto.precio}</p>
+          <p className='text-gray-900 font-bold text-xl mt-1'>${producto.precio}</p>
         </div>
         <p className='text-gray-500 text-sm leading-relaxed'>{producto.descripcion_larga || producto.descripcion_corta}</p>
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-4'>
@@ -111,10 +110,10 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
             <div className='flex items-center gap-4'>
               <button onClick={() => setCantidad(Math.max(1, cantidad - 1))} className='w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-bold'>-</button>
               <span className='text-lg font-bold'>{cantidad}</span>
-              <button onClick={() => setCantidad(cantidad + 1)} className='w-8 h-8 rounded-full bg-green-700 text-white flex items-center justify-center text-lg font-bold'>+</button>
+              <button onClick={() => setCantidad(cantidad + 1)} className='w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-lg font-bold'>+</button>
             </div>
           </div>
-          <Button onClick={handleAgregar} className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>Agregar al carrito</Button>
+          <Button onClick={handleAgregar} className='w-full bg-gray-900 hover:bg-black text-white font-semibold py-6 rounded-2xl'>Agregar al carrito</Button>
         </div>
         <button onClick={() => router.back()} className='text-center text-sm text-gray-400'>Volver al catalogo</button>
       </div>

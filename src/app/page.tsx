@@ -32,7 +32,7 @@ export default function Home() {
             <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
             <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
           </div>
-          <button onClick={handleEntrar} className='w-full bg-white text-green-800 font-semibold py-6 text-base rounded-2xl'>
+          <button onClick={handleEntrar} className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'>
             Entrar
           </button>
         </div>
@@ -57,7 +57,7 @@ export default function Home() {
           <h1 className='text-4xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
           <div className='w-full max-w-sm flex flex-col gap-3'>
             <Link href='/login' className='w-full'>
-              <button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-4 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
+              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-4 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
             </Link>
             <Link href='/registro' className='w-full'>
               <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-4 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
@@ -82,7 +82,7 @@ export default function Home() {
         </div>
         <div className='flex flex-col gap-4 w-full'>
           <Link href='/login' className='w-full'>
-            <button className='w-full bg-white text-green-800 hover:bg-green-50 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
+            <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
           </Link>
           <Link href='/registro' className='w-full'>
             <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>

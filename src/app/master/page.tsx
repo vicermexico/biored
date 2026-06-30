@@ -36,26 +36,26 @@ export default function Master() {
 
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-green-700 px-6 pt-10 pb-6 flex justify-between items-start'>
+      <div className='bg-gray-900 px-6 pt-10 pb-6 flex justify-between items-start'>
         <div>
           <h1 className='text-2xl font-bold text-white'>Panel Master</h1>
-          <p className='text-green-200 text-sm'>Administrador BIORED</p>
+          <p className='text-gray-300 text-sm'>Administrador BIORED</p>
         </div>
-        <button onClick={handleSalir} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
+        <button onClick={handleSalir} className='bg-white text-gray-900 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='grid grid-cols-2 gap-4'>
           <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-400'>Usuarios activos</p>
-            <p className='text-3xl font-bold text-green-700'>{stats.usuarios}</p>
+            <p className='text-3xl font-bold text-gray-900'>{stats.usuarios}</p>
           </div>
           <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-400'>Tokens acreditados</p>
-            <p className='text-3xl font-bold text-green-700'>{stats.tokens}</p>
+            <p className='text-3xl font-bold text-gray-900'>{stats.tokens}</p>
           </div>
           <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-400'>Pedidos BIORED</p>
-            <p className='text-3xl font-bold text-green-700'>{stats.pedidosBiored}</p>
+            <p className='text-3xl font-bold text-gray-900'>{stats.pedidosBiored}</p>
           </div>
           <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-400'>Pedidos BioTokens</p>
@@ -63,7 +63,7 @@ export default function Master() {
           </div>
         </div>
 
-        <button onClick={calcularTokens} disabled={calculando} className='bg-green-700 text-white rounded-2xl p-4 font-medium shadow-sm disabled:opacity-50'>
+        <button onClick={calcularTokens} disabled={calculando} className='bg-gray-900 text-white rounded-2xl p-4 font-medium shadow-sm disabled:opacity-50'>
           {calculando ? 'Calculando...' : 'Calcular Tokens del Mes'}
         </button>
         {mensaje && <p className='text-center text-sm text-gray-600'>{mensaje}</p>}
