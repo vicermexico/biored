@@ -18,6 +18,7 @@ export default function Home() {
     const v = videoRef.current
     if (v) {
       v.currentTime = 0
+      v.muted = false
       v.play().catch(() => setVideoTerminado(true))
     } else {
       setVideoTerminado(true)
@@ -50,7 +51,6 @@ export default function Home() {
           src={config.video_url}
           autoPlay
           playsInline
-          muted
           onEnded={() => setVideoTerminado(true)}
           style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
         />
