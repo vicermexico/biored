@@ -59,11 +59,11 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
         </button>
 
         {producto.video_url && !videoTerminado ? (
-          <div className='w-full bg-black'>
+          <div className='w-full bg-black' style={{ height: '45vh' }}>
             <video
               ref={videoRef}
               src={producto.video_url}
-              className='w-full'
+              className='w-full h-full object-cover'
               autoPlay
               playsInline
               disablePictureInPicture
@@ -71,7 +71,7 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
             />
           </div>
         ) : (
-          <div className='relative bg-gray-100 h-72 overflow-hidden'>
+          <div className='relative bg-gray-100 overflow-hidden' style={{ height: '45vh' }}>
             {todasLasFotos.length > 0 ? (
               <>
                 <img src={todasLasFotos[fotoActiva]} className='w-full h-full object-cover' />
