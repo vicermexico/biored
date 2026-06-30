@@ -18,9 +18,8 @@ export default function Home() {
     const v = videoRef.current
     if (v) {
       v.currentTime = 0
-      v.play().then(() => console.log('PLAY OK at', new Date().toISOString())).catch((e) => { console.log('PLAY ERROR', e); setVideoTerminado(true) })
+      v.play().catch(() => setVideoTerminado(true))
     } else {
-      console.log('NO VIDEO ELEMENT')
       setVideoTerminado(true)
     }
   }
@@ -32,22 +31,32 @@ export default function Home() {
         <video
           ref={videoRef}
           src={config.video_url}
-          className='absolute inset-0 w-full h-full object-cover'
+          className='absolute inset-0 w-full h-full object-cover z-0'
           style={{ display: iniciado && !videoTerminado ? 'block' : 'none' }}
           playsInline
           muted
           preload='auto'
-          onEnded={() => { console.log('VIDEO ENDED EVENT at', new Date().toISOString()); setVideoTerminado(true) }}
+          onEnded={() => setVideoTerminado(true)}
         />
       )}
 
-      {(videoTerminado || (!config?.video_url && config?.imagen_url)) && config?.imagen_url && (
-        <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
+      {videoTerminado && config?.imagen_url && (
+        <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover z-0' />
       )}
 
-      <div className='absolute inset-0 bg-black bg-opacity-30' />
+      {!iniciado && (
+        <div className='absolute inset-0 bg-black z-10' />
+      )}
 
-      <div className='relative z-10 flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
+      {iniciado && !videoTerminado && (
+        <div className='absolute inset-0 bg-black bg-opacity-10 z-10' />
+      )}
+
+      {videoTerminado && (
+        <div className='absolute inset-0 bg-black bg-opacity-30 z-10' />
+      )}
+
+      <div className='relative z-20 flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
         <div className='text-center'>
           <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
           <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
