@@ -21,8 +21,8 @@ export async function POST(request: Request) {
   const { error: errorDetalle } = await supabase.from('detalle_pedidos').insert(detalles)
   if (errorDetalle) return NextResponse.json({ error: errorDetalle.message }, { status: 500 })
 
-  // Notificación a drbioescaner.com — fire-and-forget, no bloquea al usuario
-  ;(async () => {
+  // Notificación a drbioescaner.com — espera máximo 3s, si tarda más o falla igual retorna el pedido
+  try {
     const { data: usuario } = await supabase
       .from('usuarios')
       .select('nombre, celular')
@@ -31,21 +31,26 @@ export async function POST(request: Request) {
 
     const productos = detalles.map((d: any) => ({ nombre: d.nombre_producto, cantidad: d.cantidad }))
 
-    fetch('https://drbioescaner.com/api/integracion/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.DRBIOESCANER_API_KEY! },
-      body: JSON.stringify({
-        pedido_id: pedido.id,
-        usuario_nombre: usuario?.nombre ?? '',
-        usuario_celular: usuario?.celular ?? '',
-        sucursal_id,
-        productos,
-        total,
-        tipo,
-        nip_entrega,
+    await Promise.race([
+      fetch('https://drbioescaner.com/api/integracion/pedidos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.DRBIOESCANER_API_KEY! },
+        body: JSON.stringify({
+          pedido_id: pedido.id,
+          usuario_nombre: usuario?.nombre ?? '',
+          usuario_celular: usuario?.celular ?? '',
+          sucursal_id,
+          productos,
+          total,
+          tipo,
+          nip_entrega,
+        }),
       }),
-    }).catch(e => console.error('[drbioescaner] Error notificando pedido:', e))
-  })().catch(e => console.error('[drbioescaner] Error preparando notificación:', e))
+      new Promise(resolve => setTimeout(resolve, 3000)),
+    ])
+  } catch (e) {
+    console.error('[drbioescaner] Error notificando pedido:', e)
+  }
 
   return NextResponse.json(pedido)
 }
