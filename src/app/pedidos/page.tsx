@@ -30,7 +30,7 @@ export default function Pedidos() {
             <div key={p.id} className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
               <div className='flex justify-between items-start'>
                 <div>
-                  <p className='font-bold text-gray-800'>Pedido #{p.id.slice(-6).toUpperCase()}</p>
+                  <p className='font-bold text-gray-800'>Pedido #{String(p.numero).padStart(4, '0')}</p>
                   <p className='text-xs text-gray-400'>{new Date(p.created_at).toLocaleDateString()}</p>
                 </div>
                 <span className={'text-xs font-medium px-3 py-1 rounded-full ' + (p.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-700' : p.estado === 'entregado' ? 'bg-gray-200 text-gray-900' : 'bg-red-100 text-red-700')}>{p.estado}</span>
