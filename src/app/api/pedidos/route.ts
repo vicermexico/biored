@@ -36,7 +36,7 @@ export async function POST(request: Request) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.DRBIOESCANER_API_KEY! },
         body: JSON.stringify({
-          pedido_id: pedido.id,
+          pedido_id: String(pedido.numero).padStart(4, '0'),
           usuario_nombre: usuario?.nombre ?? '',
           usuario_celular: usuario?.celular ?? '',
           sucursal_id,
