@@ -22,11 +22,30 @@ export async function POST(request: Request) {
   if (errorDetalle) return NextResponse.json({ error: errorDetalle.message }, { status: 500 })
 
   // Notificación a drbioescaner.com — fire-and-forget, no bloquea al usuario
-  fetch('https://drbioescaner.com/api/integracion/pedidos', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.DRBIOESCANER_API_KEY! },
-    body: JSON.stringify({ pedido_id: pedido.id, usuario_id, tipo, sucursal_id, sucursal_nombre, nip_entrega, items, total, total_tokens }),
-  }).catch(e => console.error('[drbioescaner] Error notificando pedido:', e))
+  ;(async () => {
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('nombre, celular')
+      .eq('id', usuario_id)
+      .single()
+
+    const productos = detalles.map((d: any) => ({ nombre: d.nombre_producto, cantidad: d.cantidad }))
+
+    fetch('https://drbioescaner.com/api/integracion/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.DRBIOESCANER_API_KEY! },
+      body: JSON.stringify({
+        pedido_id: pedido.id,
+        usuario_nombre: usuario?.nombre ?? '',
+        usuario_celular: usuario?.celular ?? '',
+        sucursal_id,
+        productos,
+        total,
+        tipo,
+        nip_entrega,
+      }),
+    }).catch(e => console.error('[drbioescaner] Error notificando pedido:', e))
+  })().catch(e => console.error('[drbioescaner] Error preparando notificación:', e))
 
   return NextResponse.json(pedido)
 }
