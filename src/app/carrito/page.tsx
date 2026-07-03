@@ -9,14 +9,30 @@ export default function Carrito() {
   const [sucursal, setSucursal] = useState('')
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
-  const sucursales = [{id:'1',nombre:'Sucursal Norte'},{id:'2',nombre:'Sucursal Sur'},{id:'3',nombre:'Sucursal Centro'}]
+  const [sucursales, setSucursales] = useState<any[]>([])
+  const [cargandoSucursales, setCargandoSucursales] = useState(true)
+  const [errorSucursales, setErrorSucursales] = useState('')
   const router = useRouter()
 
-  useEffect(() => { const c = localStorage.getItem('carrito'); if (c) setItems(JSON.parse(c)) }, [])
+  useEffect(() => {
+    const c = localStorage.getItem('carrito')
+    if (c) setItems(JSON.parse(c))
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/sucursales')
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) setErrorSucursales('No se pudieron cargar las sucursales')
+        else setSucursales(d)
+      })
+      .catch(() => setErrorSucursales('No se pudieron cargar las sucursales'))
+      .finally(() => setCargandoSucursales(false))
+  }, [])
 
   const tipo = items.length > 0 ? items[0].tipo : 'biored'
   const total = items.reduce((acc, i) => acc + (i.precio || 0) * i.cantidad, 0)
-  const totalTokens = items.reduce((acc, i) => acc + (i.precio_tokens || 0) * i.cantidad,0)
+  const totalTokens = items.reduce((acc, i) => acc + (i.precio_tokens || 0) * i.cantidad, 0)
   const totalCantidad = items.reduce((acc, i) => acc + i.cantidad, 0)
 
   const handlePedir = async () => {
@@ -27,7 +43,11 @@ export default function Carrito() {
     const usuario = JSON.parse(u)
     setCargando(true)
     const suc = sucursales.find(s => s.id === sucursal)
-    const res = await fetch('/api/pedidos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario_id: usuario.id, tipo, sucursal_id: sucursal, sucursal_nombre: suc?.nombre, items, total, total_tokens: totalTokens }) })
+    const res = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario_id: usuario.id, tipo, sucursal_id: sucursal, sucursal_nombre: suc?.name, items, total, total_tokens: totalTokens })
+    })
     const data = await res.json()
     if (res.ok) { localStorage.removeItem('carrito'); router.push('/pedidos') }
     else { setError(JSON.stringify(data)); setCargando(false) }
@@ -64,9 +84,15 @@ export default function Carrito() {
         {error && <p className='text-red-500 text-sm text-center bg-red-50 p-3 rounded-xl'>{error}</p>}
         <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
           <p className='font-medium text-gray-700'>Donde recoges tu pedido?</p>
-          {sucursales.map(s => (
+          {cargandoSucursales && (
+            <p className='text-sm text-gray-400 text-center py-2'>Cargando sucursales...</p>
+          )}
+          {errorSucursales && (
+            <p className='text-sm text-red-500 text-center bg-red-50 p-3 rounded-xl'>{errorSucursales}</p>
+          )}
+          {!cargandoSucursales && !errorSucursales && sucursales.map(s => (
             <button key={s.id} onClick={() => setSucursal(s.id)} className={'w-full text-left px-4 py-3 rounded-xl border text-sm ' + (sucursal === s.id ? 'border-gray-900 bg-gray-100 text-gray-900 font-medium' : 'border-gray-200 text-gray-600')}>
-              {s.nombre}
+              {s.name}
             </button>
           ))}
         </div>
