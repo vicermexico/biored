@@ -35,6 +35,21 @@ export default function Pedidos() {
                 </div>
                 <span className={'text-xs font-medium px-3 py-1 rounded-full ' + (p.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-700' : p.estado === 'entregado' ? 'bg-gray-200 text-gray-900' : 'bg-red-100 text-red-700')}>{p.estado}</span>
               </div>
+              <div className='bg-gray-50 rounded-xl p-3 flex flex-col gap-2'>
+                {(p.detalle_pedidos || []).map((item: any, i: number) => (
+                  <div key={i} className='flex justify-between items-center'>
+                    <div>
+                      <p className='text-sm text-gray-700'>{item.nombre_producto}</p>
+                      <p className='text-xs text-gray-400'>x{item.cantidad}</p>
+                    </div>
+                    <p className='text-sm font-medium text-gray-800'>
+                      {p.tipo === 'biored'
+                        ? '$' + (item.precio_unitario || 0) * item.cantidad
+                        : (item.precio_tokens_unitario || 0) * item.cantidad + ' tokens'}
+                    </p>
+                  </div>
+                ))}
+              </div>
               <div className='bg-gray-50 rounded-xl p-3'>
                 <p className='text-xs text-gray-400'>Sucursal</p>
                 <p className='text-sm font-medium text-gray-700'>{p.sucursal_nombre}</p>
