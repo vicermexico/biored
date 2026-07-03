@@ -15,45 +15,64 @@ export default function Home() {
   const handleEntrar = () => {
     setIniciado(true)
     const v = videoRef.current
-    if (v) {
+    if (v && config?.video_url) {
       v.currentTime = 0
-      v.muted = false
       v.play().catch(() => setVideoTerminado(true))
     } else {
       setVideoTerminado(true)
     }
   }
 
-  if (!iniciado) {
-    return (
-      <main className='min-h-screen flex flex-col items-center justify-center bg-black'>
-        <div className='flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
-          <div className='text-center'>
-            <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
-            <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
-          </div>
-          <button onClick={handleEntrar} className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'>
-            Entrar
-          </button>
-        </div>
-        {config?.video_url && (
-          <video ref={videoRef} src={config.video_url} className='hidden' playsInline muted preload='auto' />
-        )}
-      </main>
-    )
-  }
+  const mostrarVideo = iniciado && !videoTerminado
+  const mostrarFinal = videoTerminado
 
-  if (iniciado && !videoTerminado) {
-    return (
-      <main className='min-h-screen bg-black relative'>
+  return (
+    <main className='min-h-screen relative overflow-hidden bg-black'>
+
+      {/* Único elemento video — siempre en el DOM, visibilidad controlada por CSS */}
+      {config?.video_url && (
         <video
+          ref={videoRef}
           src={config.video_url}
-          autoPlay
           playsInline
+          preload='auto'
           onEnded={() => setVideoTerminado(true)}
-          style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100vh',
+            objectFit: 'cover',
+            visibility: mostrarVideo ? 'visible' : 'hidden',
+          }}
         />
-        <div className='absolute inset-0 flex flex-col items-center justify-center gap-8 px-6'>
+      )}
+
+      {/* Imagen final — aparece solo cuando el video termina */}
+      {mostrarFinal && (
+        config?.imagen_url
+          ? <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
+          : <div className='absolute inset-0 bg-white' />
+      )}
+
+      {/* Overlay splash inicial */}
+      {!iniciado && (
+        <div className='absolute inset-0 z-10 flex flex-col items-center justify-center bg-black'>
+          <div className='flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
+            <div className='text-center'>
+              <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
+              <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
+            </div>
+            <button onClick={handleEntrar} className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'>
+              Entrar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Overlay durante la reproducción del video */}
+      {mostrarVideo && (
+        <div className='absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-6'>
           <h1 className='text-4xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
           <div className='w-full max-w-sm flex flex-col gap-3'>
             <Link href='/login' className='w-full'>
@@ -64,31 +83,26 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </main>
-    )
-  }
-
-  return (
-    <main className='min-h-screen flex flex-col items-center justify-center relative overflow-hidden'>
-      {config?.imagen_url ? (
-        <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
-      ) : (
-        <div className='absolute inset-0 bg-white' />
       )}
-      <div className='relative z-10 flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
-        <div className='text-center'>
-          <h1 className='text-5xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
-          <p className='text-white mt-2 text-sm opacity-90' style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>Tu red de bienestar</p>
+
+      {/* Overlay pantalla final */}
+      {mostrarFinal && (
+        <div className='relative z-10 flex flex-col items-center justify-center gap-8 px-6 w-full max-w-sm mx-auto min-h-screen'>
+          <div className='text-center'>
+            <h1 className='text-5xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
+            <p className='text-white mt-2 text-sm opacity-90' style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>Tu red de bienestar</p>
+          </div>
+          <div className='flex flex-col gap-4 w-full'>
+            <Link href='/login' className='w-full'>
+              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
+            </Link>
+            <Link href='/registro' className='w-full'>
+              <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
+            </Link>
+          </div>
         </div>
-        <div className='flex flex-col gap-4 w-full'>
-          <Link href='/login' className='w-full'>
-            <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
-          </Link>
-          <Link href='/registro' className='w-full'>
-            <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
-          </Link>
-        </div>
-      </div>
+      )}
+
     </main>
   )
 }
