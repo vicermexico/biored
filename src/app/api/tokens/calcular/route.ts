@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!)
 
+const NIVELES_RED = 5
+
 export async function POST(request: Request) {
   try {
     const ahora = new Date()
@@ -43,17 +45,39 @@ export async function POST(request: Request) {
 
     if (!redAfiliados) return NextResponse.json({ mensaje: 'Sin datos de red' })
 
+    // Mapa de ascenso: usuario_id → su referidor directo
+    const referidorPorUsuario: Record<string, string> = {}
+    for (const relacion of redAfiliados) {
+      referidorPorUsuario[relacion.usuario_id] = relacion.referidor_id
+    }
+
     const tokensAcreditar: Record<string, number> = {}
 
-    for (const relacion of redAfiliados) {
-      const afiliadoId = relacion.usuario_id
-      const titularId = relacion.referidor_id
-      const productosAfiliado = productosPorUsuario[afiliadoId] || 0
+    // 1. Compras propias: cada titular activo gana tokens por sus propios productos
+    for (const usuarioId of usuariosActivos) {
+      const propios = productosPorUsuario[usuarioId] || 0
+      const tokensPropios = Math.floor(propios / 12)
+      if (tokensPropios > 0) {
+        tokensAcreditar[usuarioId] = (tokensAcreditar[usuarioId] || 0) + tokensPropios
+      }
+    }
+
+    // 2. Red hasta 5 niveles: las compras de cada afiliado suben la cadena.
+    // Un titular inactivo no recibe tokens ese nivel pero la cadena sigue subiendo.
+    for (const [afiliadoId, productosAfiliado] of Object.entries(productosPorUsuario)) {
       if (productosAfiliado === 0) continue
-      if (!usuariosActivos.has(titularId)) continue
       const tokensGenerados = Math.floor(productosAfiliado / 12)
       if (tokensGenerados === 0) continue
-      tokensAcreditar[titularId] = (tokensAcreditar[titularId] || 0) + tokensGenerados
+
+      let currentId = afiliadoId
+      for (let nivel = 1; nivel <= NIVELES_RED; nivel++) {
+        const titularId = referidorPorUsuario[currentId]
+        if (!titularId) break
+        if (usuariosActivos.has(titularId)) {
+          tokensAcreditar[titularId] = (tokensAcreditar[titularId] || 0) + tokensGenerados
+        }
+        currentId = titularId
+      }
     }
 
     let totalAcreditados = 0
