@@ -6,13 +6,17 @@ import { Button } from '@/components/ui/button'
 export default function MasterBiotokens() {
   const router = useRouter()
   const [productos, setProductos] = useState<any[]>([])
+  const [productosExterno, setProductosExterno] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
   const [subiendo, setSubiendo] = useState('')
   const [modo, setModo] = useState<'ninguno' | 'agregar' | 'editar'>('ninguno')
   const [editandoId, setEditandoId] = useState<string | null>(null)
-  const [form, setForm] = useState({ nombre: '', descripcion_corta: '', descripcion_larga: '', precio_tokens: '', foto_url: '', video_url: '', fotos_adicionales: [] as string[] })
+  const [form, setForm] = useState({ nombre: '', descripcion_corta: '', descripcion_larga: '', precio_tokens: '', foto_url: '', video_url: '', fotos_adicionales: [] as string[], drbioescaner_producto_id: '' })
 
-  useEffect(() => { cargarProductos() }, [])
+  useEffect(() => {
+    cargarProductos()
+    fetch('/api/drbioescaner/productos').then(r => r.json()).then(data => { if (Array.isArray(data)) setProductosExterno(data) })
+  }, [])
 
   const cargarProductos = () => {
     fetch('/api/master/productos/biotokens').then(r => r.json()).then(data => { setProductos(data); setCargando(false) })
@@ -73,7 +77,7 @@ export default function MasterBiotokens() {
   const handleEditar = (p: any) => {
     let fotos = []
     try { fotos = JSON.parse(p.fotos_adicionales || '[]') } catch { fotos = [] }
-    setForm({ nombre: p.nombre || '', descripcion_corta: p.descripcion_corta || '', descripcion_larga: p.descripcion_larga || '', precio_tokens: p.precio_tokens || '', foto_url: p.foto_url || '', video_url: p.video_url || '', fotos_adicionales: fotos })
+    setForm({ nombre: p.nombre || '', descripcion_corta: p.descripcion_corta || '', descripcion_larga: p.descripcion_larga || '', precio_tokens: p.precio_tokens || '', foto_url: p.foto_url || '', video_url: p.video_url || '', fotos_adicionales: fotos, drbioescaner_producto_id: p.drbioescaner_producto_id || '' })
     setEditandoId(p.id)
     setModo('editar')
   }
@@ -89,7 +93,7 @@ export default function MasterBiotokens() {
   }
 
   const resetForm = () => {
-    setForm({ nombre: '', descripcion_corta: '', descripcion_larga: '', precio_tokens: '', foto_url: '', video_url: '', fotos_adicionales: [] })
+    setForm({ nombre: '', descripcion_corta: '', descripcion_larga: '', precio_tokens: '', foto_url: '', video_url: '', fotos_adicionales: [], drbioescaner_producto_id: '' })
     setModo('ninguno')
     setEditandoId(null)
   }
@@ -114,6 +118,15 @@ export default function MasterBiotokens() {
               <input type='text' placeholder='Descripcion corta (sale en galería)' value={form.descripcion_corta} onChange={e => setForm({...form, descripcion_corta: e.target.value})} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-500' />
               <textarea placeholder='Descripcion larga (sale en detalle)' value={form.descripcion_larga} onChange={e => setForm({...form, descripcion_larga: e.target.value})} rows={3} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-500 resize-none' />
               <input type='number' placeholder='Precio en tokens' value={form.precio_tokens} onChange={e => setForm({...form, precio_tokens: e.target.value})} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-500' />
+              <div className='flex flex-col gap-1'>
+                <p className='text-xs text-gray-500 font-medium'>Producto en drbioescaner (opcional)</p>
+                <select value={form.drbioescaner_producto_id} onChange={e => setForm({...form, drbioescaner_producto_id: e.target.value})} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-500 bg-white'>
+                  <option value=''>— Sin vincular —</option>
+                  {productosExterno.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
