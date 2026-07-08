@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import NavBar from '@/components/NavBar'
 
 function badgeClasses(estado: string) {
@@ -78,12 +77,14 @@ function PedidoCard({ p }: { p: any }) {
   )
 }
 
-type Vista = null | 'sinrecoger' | 'recibidos'
+type Tipo = null | 'biored' | 'biotokens'
+type Estado = null | 'pendiente' | 'separado' | 'entregado'
 
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
-  const [vista, setVista] = useState<Vista>(null)
+  const [tipo, setTipo] = useState<Tipo>(null)
+  const [estado, setEstado] = useState<Estado>(null)
 
   useEffect(() => {
     const u = localStorage.getItem('usuario')
@@ -91,32 +92,35 @@ export default function Pedidos() {
     const usuario = JSON.parse(u)
     fetch('/api/pedidos?usuario_id=' + usuario.id)
       .then(r => r.json())
-      .then(data => { setPedidos(data.pedidos || data || []); setCargando(false) })
+      .then(data => { setPedidos(Array.isArray(data) ? data : []); setCargando(false) })
   }, [])
 
-  const sinRecoger = pedidos.filter(p => p.estado === 'pendiente' || p.estado === 'separado')
-  const recibidos = pedidos.filter(p => p.estado === 'entregado')
+  const count = (t: Tipo, e: Estado) =>
+    pedidos.filter(p => p.tipo === t && p.estado === e).length
 
-  const listaActual = vista === 'sinrecoger' ? sinRecoger : recibidos
+  const lista = pedidos.filter(p => p.tipo === tipo && p.estado === estado)
 
-  if (vista !== null) {
+  // Nivel 3 — lista filtrada
+  if (tipo !== null && estado !== null) {
+    const titulos: Record<string, string> = {
+      pendiente: 'Sin recoger',
+      separado: 'Para recoger',
+      entregado: 'Entregados',
+    }
     return (
       <main className='min-h-screen bg-gray-50 pb-24'>
         <div className='bg-gray-900 px-6 pt-10 pb-6'>
-          <button onClick={() => setVista(null)} className='text-white text-sm font-medium mb-3 flex items-center gap-1'>
-            ← Regresar
-          </button>
-          <h1 className='text-2xl font-bold text-white'>
-            {vista === 'sinrecoger' ? 'Sin recoger' : 'Pedidos Recibidos'}
-          </h1>
+          <button onClick={() => setEstado(null)} className='text-white text-sm font-medium mb-3 flex items-center gap-1'>← Regresar</button>
+          <h1 className='text-2xl font-bold text-white'>{titulos[estado]}</h1>
+          <p className='text-gray-400 text-sm mt-0.5'>{tipo === 'biored' ? 'BIORED' : 'BioTokens'}</p>
         </div>
         <div className='px-6 py-6 flex flex-col gap-4'>
-          {listaActual.length === 0 ? (
+          {lista.length === 0 ? (
             <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
               <p className='text-gray-500 text-sm'>No hay pedidos en esta sección</p>
             </div>
           ) : (
-            listaActual.map(p => <PedidoCard key={p.id} p={p} />)
+            lista.map(p => <PedidoCard key={p.id} p={p} />)
           )}
         </div>
         <NavBar />
@@ -124,6 +128,63 @@ export default function Pedidos() {
     )
   }
 
+  // Nivel 2 — estados del tipo elegido
+  if (tipo !== null) {
+    const esBiored = tipo === 'biored'
+    const accentBg = esBiored ? 'bg-gray-900' : 'bg-red-500'
+    const accentText = esBiored ? 'text-gray-900' : 'text-red-500'
+    const titulo = esBiored ? 'Pedidos BIORED' : 'Pedidos BioTokens'
+
+    return (
+      <main className='min-h-screen bg-gray-50 pb-24'>
+        <div className={`${accentBg} px-6 pt-10 pb-6`}>
+          <button onClick={() => setTipo(null)} className='text-white text-sm font-medium mb-3 flex items-center gap-1 opacity-80'>← Regresar</button>
+          <h1 className='text-2xl font-bold text-white'>{titulo}</h1>
+        </div>
+        <div className='px-6 py-6 flex flex-col gap-4'>
+          {cargando ? (
+            <div className='bg-gray-200 rounded-2xl h-24 animate-pulse' />
+          ) : (
+            <>
+              <button
+                onClick={() => setEstado('pendiente')}
+                className='bg-red-50 border border-red-100 rounded-2xl p-6 flex justify-between items-center shadow-sm active:scale-95 transition-transform'
+              >
+                <div className='text-left'>
+                  <p className='text-base font-semibold text-red-800'>Sin recoger</p>
+                  <p className='text-xs text-red-500 mt-0.5'>Pendientes de pago o preparación</p>
+                </div>
+                <p className={`text-3xl font-bold ${accentText}`}>{count(tipo, 'pendiente')}</p>
+              </button>
+              <button
+                onClick={() => setEstado('separado')}
+                className='bg-yellow-50 border border-yellow-100 rounded-2xl p-6 flex justify-between items-center shadow-sm active:scale-95 transition-transform'
+              >
+                <div className='text-left'>
+                  <p className='text-base font-semibold text-yellow-800'>Para recoger</p>
+                  <p className='text-xs text-yellow-600 mt-0.5'>Listos en sucursal</p>
+                </div>
+                <p className='text-3xl font-bold text-yellow-700'>{count(tipo, 'separado')}</p>
+              </button>
+              <button
+                onClick={() => setEstado('entregado')}
+                className='bg-green-50 border border-green-100 rounded-2xl p-6 flex justify-between items-center shadow-sm active:scale-95 transition-transform'
+              >
+                <div className='text-left'>
+                  <p className='text-base font-semibold text-green-800'>Entregados</p>
+                  <p className='text-xs text-green-600 mt-0.5'>Historial de pedidos recibidos</p>
+                </div>
+                <p className='text-3xl font-bold text-green-700'>{count(tipo, 'entregado')}</p>
+              </button>
+            </>
+          )}
+        </div>
+        <NavBar />
+      </main>
+    )
+  }
+
+  // Nivel 1 — tipo de catálogo
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
       <div className='bg-gray-900 px-6 pt-10 pb-6'>
@@ -131,24 +192,28 @@ export default function Pedidos() {
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         {cargando ? (
-          <div className='bg-gray-200 rounded-2xl h-24 animate-pulse'></div>
+          <div className='bg-gray-200 rounded-2xl h-24 animate-pulse' />
         ) : (
           <>
             <button
-              onClick={() => setVista('sinrecoger')}
-              className='bg-yellow-50 border border-yellow-200 rounded-2xl p-6 flex flex-col gap-2 text-left shadow-sm active:scale-95 transition-transform'
+              onClick={() => setTipo('biored')}
+              className='bg-gray-900 rounded-2xl p-6 flex flex-col gap-2 text-left shadow-sm active:scale-95 transition-transform'
             >
-              <p className='text-2xl font-bold text-yellow-700'>{sinRecoger.length}</p>
-              <p className='text-base font-semibold text-yellow-800'>Pedidos Sin recoger</p>
-              <p className='text-xs text-yellow-600'>Pendientes y listos para recoger</p>
+              <p className='text-3xl font-bold text-white'>
+                {pedidos.filter(p => p.tipo === 'biored').length}
+              </p>
+              <p className='text-lg font-semibold text-white'>Pedidos BIORED</p>
+              <p className='text-xs text-gray-400'>Productos del catálogo BIORED</p>
             </button>
             <button
-              onClick={() => setVista('recibidos')}
-              className='bg-green-50 border border-green-200 rounded-2xl p-6 flex flex-col gap-2 text-left shadow-sm active:scale-95 transition-transform'
+              onClick={() => setTipo('biotokens')}
+              className='bg-red-500 rounded-2xl p-6 flex flex-col gap-2 text-left shadow-sm active:scale-95 transition-transform'
             >
-              <p className='text-2xl font-bold text-green-700'>{recibidos.length}</p>
-              <p className='text-base font-semibold text-green-800'>Pedidos Recibidos</p>
-              <p className='text-xs text-green-600'>Historial de pedidos entregados</p>
+              <p className='text-3xl font-bold text-white'>
+                {pedidos.filter(p => p.tipo === 'biotokens').length}
+              </p>
+              <p className='text-lg font-semibold text-white'>Pedidos BioTokens</p>
+              <p className='text-xs text-red-100'>Productos del catálogo BioTokens</p>
             </button>
           </>
         )}
