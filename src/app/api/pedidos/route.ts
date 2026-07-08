@@ -42,6 +42,7 @@ export async function POST(request: Request) {
           sucursal_id,
           productos,
           total,
+          total_tokens,
           tipo,
           nip_entrega,
         }),
