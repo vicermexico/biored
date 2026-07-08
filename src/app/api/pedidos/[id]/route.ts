@@ -7,18 +7,31 @@ export async function PATCH(request: Request, ctx: RouteContext<'/api/pedidos/[i
   const { id } = await ctx.params
   const { estado } = await request.json()
 
-  const { data: existente } = await supabase
+  // Busca por UUID primero; si no encuentra, busca por numero secuencial
+  let { data: existente } = await supabase
     .from('pedidos')
     .select('id')
     .eq('id', id)
     .single()
+
+  if (!existente) {
+    const numero = parseInt(id, 10)
+    if (!isNaN(numero)) {
+      const { data } = await supabase
+        .from('pedidos')
+        .select('id')
+        .eq('numero', numero)
+        .single()
+      existente = data
+    }
+  }
 
   if (!existente) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
 
   const { data: pedido, error } = await supabase
     .from('pedidos')
     .update({ estado })
-    .eq('id', id)
+    .eq('id', existente.id)
     .select()
     .single()
 
