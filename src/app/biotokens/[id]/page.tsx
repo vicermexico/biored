@@ -39,7 +39,7 @@ export default function DetalleBiotoken({ params }: { params: Promise<{ id: stri
     if (cantidad * producto.precio_tokens > tokensDisponibles) { alert('Tokens insuficientes'); return }
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]')
     const existe = carrito.find((i: any) => i.id === producto.id)
-    if (existe) { existe.cantidad += cantidad } else { carrito.push({ id: producto.id, nombre: producto.nombre, precio_tokens: producto.precio_tokens, cantidad, tipo: 'biotokens' }) }
+    if (existe) { existe.cantidad += cantidad } else { carrito.push({ id: producto.id, nombre: producto.nombre, precio_tokens: producto.precio_tokens, cantidad, tipo: 'biotokens', foto_url: producto.foto_url || null }) }
     localStorage.setItem('carrito', JSON.stringify(carrito))
     router.push('/carrito')
   }
