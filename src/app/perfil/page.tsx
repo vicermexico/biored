@@ -56,9 +56,8 @@ export default function Perfil() {
 
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-gray-900 px-6 pt-10 pb-6 flex justify-between items-center'>
+      <div className='bg-gray-900 px-6 pt-10 pb-6'>
         <h1 className='text-2xl font-bold text-white'>Mi Perfil</h1>
-        <button onClick={() => { localStorage.removeItem('usuario'); router.push('/') }} className='bg-white text-gray-900 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='bg-white rounded-2xl p-6 shadow-sm flex flex-col items-center gap-3'>

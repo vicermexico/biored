@@ -4,10 +4,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import NavBar from '@/components/NavBar'
+
 export default function Dashboard() {
   const [usuario, setUsuario] = useState<any>(null)
   const [tokens, setTokens] = useState(0)
+  const [pedidos, setPedidos] = useState<any[]>([])
   const router = useRouter()
+
   useEffect(() => {
     const u = localStorage.getItem('usuario')
     if (!u) { router.push('/login'); return }
@@ -20,37 +23,36 @@ export default function Dashboard() {
         localStorage.setItem('usuario', JSON.stringify(d.usuario))
       }
     }).catch(() => {})
+    fetch('/api/pedidos?usuario_id=' + usr.id).then(r => r.json()).then(d => setPedidos(d.pedidos || [])).catch(() => {})
   }, [])
-  const handleSalir = () => {
-    if (confirm('¿Seguro que quieres cerrar sesión?')) {
-      localStorage.removeItem('usuario')
-      router.push('/')
-    }
-  }
+
+  const count = (estado: string) => pedidos.filter(p => p.estado === estado).length
+
   if (!usuario) return <div className='min-h-screen flex items-center justify-center'><p className='text-gray-400'>Cargando...</p></div>
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-gray-900 px-6 pt-10 pb-6 flex justify-between items-start'>
-        <div>
-          <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
-          <p className='text-gray-300 text-sm'>Bienvenido a BIORED</p>
-        </div>
-        <button onClick={handleSalir} className='bg-white text-gray-900 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
+      <div className='bg-gray-900 px-6 pt-10 pb-6'>
+        <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
+        <p className='text-gray-300 text-sm'>Bienvenido a BIORED</p>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='grid grid-cols-2 gap-4'>
-          <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-            <p className='text-xs text-gray-400'>Mis Tokens</p>
+          <div className='bg-red-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+            <p className='text-xs text-gray-500'>Mis Tokens</p>
             <p className='text-3xl font-bold text-gray-900'>{tokens}</p>
           </div>
-          <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-            <p className='text-xs text-gray-400'>Invitados activos</p>
-            <p className='text-3xl font-bold text-gray-900'>0</p>
+          <div className='bg-yellow-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+            <p className='text-xs text-gray-500'>Sin recoger</p>
+            <p className='text-3xl font-bold text-gray-900'>{count('pendiente')}</p>
           </div>
-        </div>
-        <div className='bg-white rounded-2xl p-4 shadow-sm'>
-          <p className='text-xs text-gray-400 mb-3'>Pedidos recientes</p>
-          <p className='text-sm text-gray-400 text-center py-4'>Aun no tienes pedidos</p>
+          <div className='bg-yellow-100 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+            <p className='text-xs text-gray-500'>Listos para recoger</p>
+            <p className='text-3xl font-bold text-gray-900'>{count('separado')}</p>
+          </div>
+          <div className='bg-green-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+            <p className='text-xs text-gray-500'>Entregados</p>
+            <p className='text-3xl font-bold text-gray-900'>{count('entregado')}</p>
+          </div>
         </div>
         <div className='flex flex-col gap-3'>
           <Link href='/catalogo'>

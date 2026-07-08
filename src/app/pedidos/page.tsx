@@ -78,9 +78,12 @@ function PedidoCard({ p }: { p: any }) {
   )
 }
 
+type Vista = null | 'sinrecoger' | 'recibidos'
+
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
+  const [vista, setVista] = useState<Vista>(null)
 
   useEffect(() => {
     const u = localStorage.getItem('usuario')
@@ -88,42 +91,65 @@ export default function Pedidos() {
     const usuario = JSON.parse(u)
     fetch('/api/pedidos?usuario_id=' + usuario.id)
       .then(r => r.json())
-      .then(data => { setPedidos(data); setCargando(false) })
+      .then(data => { setPedidos(data.pedidos || data || []); setCargando(false) })
   }, [])
 
-  const porEntregar = pedidos.filter(p => p.estado === 'pendiente' || p.estado === 'separado')
-  const entregados = pedidos.filter(p => p.estado === 'entregado')
+  const sinRecoger = pedidos.filter(p => p.estado === 'pendiente' || p.estado === 'separado')
+  const recibidos = pedidos.filter(p => p.estado === 'entregado')
+
+  const listaActual = vista === 'sinrecoger' ? sinRecoger : recibidos
+
+  if (vista !== null) {
+    return (
+      <main className='min-h-screen bg-gray-50 pb-24'>
+        <div className='bg-gray-900 px-6 pt-10 pb-6'>
+          <button onClick={() => setVista(null)} className='text-white text-sm font-medium mb-3 flex items-center gap-1'>
+            ← Regresar
+          </button>
+          <h1 className='text-2xl font-bold text-white'>
+            {vista === 'sinrecoger' ? 'Sin recoger' : 'Pedidos Recibidos'}
+          </h1>
+        </div>
+        <div className='px-6 py-6 flex flex-col gap-4'>
+          {listaActual.length === 0 ? (
+            <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
+              <p className='text-gray-500 text-sm'>No hay pedidos en esta sección</p>
+            </div>
+          ) : (
+            listaActual.map(p => <PedidoCard key={p.id} p={p} />)
+          )}
+        </div>
+        <NavBar />
+      </main>
+    )
+  }
 
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
       <div className='bg-gray-900 px-6 pt-10 pb-6'>
         <h1 className='text-2xl font-bold text-white'>Mis Pedidos</h1>
       </div>
-      <div className='px-6 py-6 flex flex-col gap-6'>
+      <div className='px-6 py-6 flex flex-col gap-4'>
         {cargando ? (
           <div className='bg-gray-200 rounded-2xl h-24 animate-pulse'></div>
-        ) : pedidos.length === 0 ? (
-          <div className='bg-white rounded-2xl p-8 shadow-sm text-center'>
-            <svg xmlns='http://www.w3.org/2000/svg' className='w-12 h-12 text-gray-300 mx-auto mb-3' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' />
-            </svg>
-            <p className='text-gray-500 text-sm'>Aun no tienes pedidos</p>
-            <Link href='/catalogo' className='text-gray-900 text-sm font-medium mt-2 block'>Ver catalogo</Link>
-          </div>
         ) : (
           <>
-            {porEntregar.length > 0 && (
-              <section className='flex flex-col gap-4'>
-                <h2 className='text-sm font-semibold text-gray-500 uppercase tracking-wide'>Por entregar</h2>
-                {porEntregar.map(p => <PedidoCard key={p.id} p={p} />)}
-              </section>
-            )}
-            {entregados.length > 0 && (
-              <section className='flex flex-col gap-4'>
-                <h2 className='text-sm font-semibold text-gray-500 uppercase tracking-wide'>Entregados</h2>
-                {entregados.map(p => <PedidoCard key={p.id} p={p} />)}
-              </section>
-            )}
+            <button
+              onClick={() => setVista('sinrecoger')}
+              className='bg-yellow-50 border border-yellow-200 rounded-2xl p-6 flex flex-col gap-2 text-left shadow-sm active:scale-95 transition-transform'
+            >
+              <p className='text-2xl font-bold text-yellow-700'>{sinRecoger.length}</p>
+              <p className='text-base font-semibold text-yellow-800'>Pedidos Sin recoger</p>
+              <p className='text-xs text-yellow-600'>Pendientes y listos para recoger</p>
+            </button>
+            <button
+              onClick={() => setVista('recibidos')}
+              className='bg-green-50 border border-green-200 rounded-2xl p-6 flex flex-col gap-2 text-left shadow-sm active:scale-95 transition-transform'
+            >
+              <p className='text-2xl font-bold text-green-700'>{recibidos.length}</p>
+              <p className='text-base font-semibold text-green-800'>Pedidos Recibidos</p>
+              <p className='text-xs text-green-600'>Historial de pedidos entregados</p>
+            </button>
           </>
         )}
       </div>
