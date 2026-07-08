@@ -23,7 +23,7 @@ export default function Dashboard() {
         localStorage.setItem('usuario', JSON.stringify(d.usuario))
       }
     }).catch(() => {})
-    fetch('/api/pedidos?usuario_id=' + usr.id).then(r => r.json()).then(d => setPedidos(d.pedidos || [])).catch(() => {})
+    fetch('/api/pedidos?usuario_id=' + usr.id).then(r => r.json()).then(d => setPedidos(Array.isArray(d) ? d : [])).catch(() => {})
   }, [])
 
   const count = (estado: string) => pedidos.filter(p => p.estado === estado).length

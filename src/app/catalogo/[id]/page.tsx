@@ -40,7 +40,7 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
   const handleAgregar = () => {
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]')
     const existe = carrito.find((i: any) => i.id === producto.id)
-    if (existe) { existe.cantidad += cantidad } else { carrito.push({ id: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad, tipo: 'biored', drbioescaner_producto_id: producto.drbioescaner_producto_id || null }) }
+    if (existe) { existe.cantidad += cantidad } else { carrito.push({ id: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad, tipo: 'biored', drbioescaner_producto_id: producto.drbioescaner_producto_id || null, foto_url: producto.foto_url || null }) }
     localStorage.setItem('carrito', JSON.stringify(carrito))
     router.push('/carrito')
   }
