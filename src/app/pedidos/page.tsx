@@ -3,8 +3,20 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import NavBar from '@/components/NavBar'
 
+function badgeClasses(estado: string) {
+  if (estado === 'pendiente') return 'bg-red-50 text-red-600'
+  if (estado === 'separado') return 'bg-yellow-50 text-yellow-700'
+  return 'bg-green-50 text-green-600'
+}
+
+function badgeLabel(estado: string) {
+  if (estado === 'pendiente') return 'Pedido sin pagar / Mercancía no lista'
+  if (estado === 'separado') return 'Pedido sin pagar / Mercancía lista para recoger'
+  return 'Pedido pagado'
+}
+
 function PedidoCard({ p }: { p: any }) {
-  const pendiente = p.estado === 'pendiente'
+  const entregado = p.estado === 'entregado'
   return (
     <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3'>
       <div className='flex justify-between items-start'>
@@ -12,13 +24,15 @@ function PedidoCard({ p }: { p: any }) {
           <p className='font-bold text-gray-800'>Pedido #{String(p.numero).padStart(4, '0')}</p>
           <p className='text-xs text-gray-400'>{new Date(p.created_at).toLocaleDateString()}</p>
         </div>
-        <span className={
-          'text-xs font-medium px-3 py-1 rounded-full ' +
-          (pendiente ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600')
-        }>
-          {pendiente ? 'Pedido sin pagar' : 'Pedido pagado'}
+        <span className={'text-xs font-medium px-3 py-1 rounded-full ' + badgeClasses(p.estado)}>
+          {badgeLabel(p.estado)}
         </span>
       </div>
+      {p.estado === 'separado' && (
+        <div className='bg-yellow-50 border border-yellow-200 rounded-xl p-3'>
+          <p className='text-sm font-semibold text-yellow-700'>¡Tu mercancía está lista! Ya puedes ir a recogerla</p>
+        </div>
+      )}
       <div className='bg-gray-50 rounded-xl p-3 flex flex-col gap-2'>
         {(p.detalle_pedidos || []).map((item: any, i: number) => (
           <div key={i} className='flex justify-between items-center'>
@@ -38,7 +52,7 @@ function PedidoCard({ p }: { p: any }) {
         <p className='text-xs text-gray-400'>Sucursal</p>
         <p className='text-sm font-medium text-gray-700'>{p.sucursal_nombre}</p>
       </div>
-      {!pendiente && (
+      {entregado && (
         <div className='bg-gray-50 rounded-xl p-3 flex flex-col gap-1'>
           <p className='text-xs text-gray-400'>Fecha de entrega</p>
           <p className='text-sm font-medium text-gray-700'>{new Date(p.updated_at).toLocaleDateString()}</p>
@@ -50,7 +64,7 @@ function PedidoCard({ p }: { p: any }) {
           )}
         </div>
       )}
-      {pendiente && (
+      {!entregado && (
         <div className='bg-gray-100 rounded-xl p-3 flex justify-between items-center'>
           <div>
             <p className='text-xs text-gray-400'>NIP de entrega</p>
@@ -77,7 +91,7 @@ export default function Pedidos() {
       .then(data => { setPedidos(data); setCargando(false) })
   }, [])
 
-  const porEntregar = pedidos.filter(p => p.estado === 'pendiente')
+  const porEntregar = pedidos.filter(p => p.estado === 'pendiente' || p.estado === 'separado')
   const entregados = pedidos.filter(p => p.estado === 'entregado')
 
   return (
