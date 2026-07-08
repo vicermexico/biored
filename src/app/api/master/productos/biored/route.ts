@@ -9,19 +9,19 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales } = await request.json()
+  const { nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales, drbioescaner_producto_id } = await request.json()
   if (!nombre || !precio) return NextResponse.json({ error: 'Nombre y precio requeridos' }, { status: 400 })
   const fotosStr = typeof fotos_adicionales === 'string' ? fotos_adicionales : JSON.stringify(fotos_adicionales || [])
-  const { data, error } = await supabase.from('productos_biored').insert({ nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales: fotosStr, activo: true }).select().single()
+  const { data, error } = await supabase.from('productos_biored').insert({ nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales: fotosStr, drbioescaner_producto_id: drbioescaner_producto_id || null, activo: true }).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
 
 export async function PATCH(request: Request) {
-  const { id, nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales } = await request.json()
+  const { id, nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales, drbioescaner_producto_id } = await request.json()
   if (!id) return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
   const fotosStr = typeof fotos_adicionales === 'string' ? fotos_adicionales : JSON.stringify(fotos_adicionales || [])
-  const { error } = await supabase.from('productos_biored').update({ nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales: fotosStr }).eq('id', id)
+  const { error } = await supabase.from('productos_biored').update({ nombre, descripcion_corta, descripcion_larga, precio, foto_url, video_url, fotos_adicionales: fotosStr, drbioescaner_producto_id: drbioescaner_producto_id || null }).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }

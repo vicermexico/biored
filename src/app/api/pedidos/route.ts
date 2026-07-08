@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       .eq('id', usuario_id)
       .single()
 
-    const productos = detalles.map((d: any) => ({ nombre: d.nombre_producto, cantidad: d.cantidad }))
+    const productos = items.map((item: any) => ({ nombre: item.nombre, cantidad: item.cantidad, product_id: item.drbioescaner_producto_id || null }))
 
     await Promise.race([
       fetch('https://drbioescaner.com/api/integracion/pedidos', {
