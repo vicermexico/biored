@@ -93,6 +93,12 @@ export default function Master() {
               <span className='text-gray-300'>›</span>
             </div>
           </Link>
+          <Link href='/master/juegos'>
+            <div className='bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between'>
+              <p className='font-medium text-gray-800'>🎮 Juegos</p>
+              <span className='text-gray-300'>›</span>
+            </div>
+          </Link>
         </div>
       </div>
     </main>
