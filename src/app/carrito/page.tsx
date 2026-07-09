@@ -31,7 +31,9 @@ export default function Carrito() {
   }, [])
 
   const tipo = items.length > 0 ? items[0].tipo : 'biored'
-  const total = items.reduce((acc, i) => acc + (i.precio || 0) * i.cantidad, 0)
+  const subtotal = items.reduce((acc, i) => acc + (i.precio || 0) * i.cantidad, 0)
+  const descuento = tipo === 'biored' ? Math.round(subtotal * 0.40 * 100) / 100 : 0
+  const total = subtotal - descuento
   const totalTokens = items.reduce((acc, i) => acc + (i.precio_tokens || 0) * i.cantidad, 0)
   const totalCantidad = items.reduce((acc, i) => acc + i.cantidad, 0)
 
@@ -117,10 +119,28 @@ export default function Carrito() {
                 </div>
               ))}
             </div>
-            <div className='bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center'>
-              <p className='font-bold text-gray-800'>Total a Pagar</p>
-              <p className='font-bold text-gray-900 text-2xl'>{tipo === 'biored' ? '$' + total : totalTokens + ' tokens'}</p>
-            </div>
+
+            {tipo === 'biored' ? (
+              <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-2'>
+                <div className='flex justify-between items-center'>
+                  <p className='text-sm text-gray-500'>Subtotal</p>
+                  <p className='text-sm text-gray-700'>${subtotal}</p>
+                </div>
+                <div className='flex justify-between items-center'>
+                  <p className='text-sm text-green-600 font-medium'>Descuento distribuidor 40%</p>
+                  <p className='text-sm text-green-600 font-medium'>-${descuento}</p>
+                </div>
+                <div className='border-t border-gray-100 pt-2 mt-1 flex justify-between items-center'>
+                  <p className='font-bold text-gray-800'>Total a pagar</p>
+                  <p className='font-bold text-gray-900 text-2xl'>${total}</p>
+                </div>
+              </div>
+            ) : (
+              <div className='bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center'>
+                <p className='font-bold text-gray-800'>Total a Pagar</p>
+                <p className='font-bold text-gray-900 text-2xl'>{totalTokens} tokens</p>
+              </div>
+            )}
           </>
         )}
         {error && <p className='text-red-500 text-sm text-center bg-red-50 p-3 rounded-xl'>{error}</p>}
