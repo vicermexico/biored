@@ -15,7 +15,12 @@ export async function GET(request: Request) {
   const tokens = config.juego_tokens || 0
 
   // Condición 1: por compra de productos
-  if (config.juego_por_compra_activo && config.juego_por_compra_cantidad) {
+  if (config.juego_por_compra_activo) {
+    // Cantidad 0 o null = modo prueba: aplica a cualquier usuario
+    if (!config.juego_por_compra_cantidad) {
+      return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
+    }
+
     const { data: yaReclamado } = await supabase
       .from('juego_historial')
       .select('id')
