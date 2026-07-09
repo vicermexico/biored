@@ -11,6 +11,8 @@ export async function GET(request: Request) {
   const { data: config } = await supabase.from('configuracion').select('*').single()
   if (!config) return NextResponse.json({ aplica: false })
 
+  console.log('[juego/verificar] config:', JSON.stringify(config))
+
   const video_url = config.juego_video_url || ''
   const tokens = config.juego_tokens || 0
 
