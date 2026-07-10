@@ -30,7 +30,13 @@ export default function Dashboard() {
     if (!sessionStorage.getItem('juego_visto')) {
       fetch('/api/juego/verificar?usuario_id=' + usr.id)
         .then(r => r.json())
-        .then(d => { if (d.aplica) setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo }) })
+        .then(d => {
+          if (d.aplica) {
+            setTimeout(() => {
+              setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo })
+            }, 5000)
+          }
+        })
         .catch(() => {})
     }
   }, [])
