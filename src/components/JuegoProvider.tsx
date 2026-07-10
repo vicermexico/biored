@@ -1,12 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import JuegoModal from './JuegoModal'
 
 export default function JuegoProvider() {
   const [juego, setJuego] = useState<{ video_url: string; tokens: number; tipo: string } | null>(null)
   const [usuarioId, setUsuarioId] = useState<string | null>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
+    const rutasPublicas = ['/', '/login', '/registro']
+    if (rutasPublicas.includes(pathname)) return
+
     const u = localStorage.getItem('usuario')
     if (!u) return
     const usr = JSON.parse(u)
@@ -22,7 +27,7 @@ export default function JuegoProvider() {
         }
       })
       .catch(() => {})
-  }, [])
+  }, [pathname])
 
   const handleCerrar = () => {
     sessionStorage.setItem('juego_visto', '1')
