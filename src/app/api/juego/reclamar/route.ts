@@ -7,6 +7,8 @@ export async function POST(request: Request) {
   const { usuario_id, tipo } = await request.json()
   if (!usuario_id || !tipo) return NextResponse.json({ error: 'Faltan datos' }, { status: 400 })
 
+  console.log('[reclamar] usuario_id:', usuario_id, 'tipo:', tipo)
+
   // Verificar que no se haya reclamado antes
   const { data: existente } = await supabase
     .from('juego_historial')
@@ -29,8 +31,11 @@ export async function POST(request: Request) {
     .single()
 
   const nuevoSaldo = (tokenActual?.saldo || 0) + tokensGanados
+  console.log('[reclamar] tokenActual:', tokenActual, 'nuevoSaldo:', nuevoSaldo)
+
   if (tokenActual) {
-    await supabase.from('tokens').update({ saldo: nuevoSaldo }).eq('usuario_id', usuario_id)
+    const updateResult = await supabase.from('tokens').update({ saldo: nuevoSaldo }).eq('usuario_id', usuario_id)
+    console.log('[reclamar] resultado update tokens:', JSON.stringify(updateResult))
   } else {
     await supabase.from('tokens').insert({ usuario_id, saldo: tokensGanados })
   }

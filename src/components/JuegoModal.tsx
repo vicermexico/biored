@@ -46,13 +46,13 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
       {fase === 'inicio' && (
         <div className='flex flex-col items-center gap-6 text-center'>
           <p className='text-6xl'>🎮</p>
-          <h1 className='text-3xl font-bold text-white'>¡Felicitaciones!</h1>
-          <p className='text-gray-300 text-base'>Has ganado un premio especial de BIORED</p>
+          <h1 className='text-3xl font-bold text-white'>¡FELICIDADES!</h1>
+          <p className='text-gray-300 text-base'>Has ganado un juego GRATIS</p>
           <button
             onClick={handleVerPremio}
             className='bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-2xl text-lg mt-2'
           >
-            Ver mi premio
+            JUGAR
           </button>
         </div>
       )}
