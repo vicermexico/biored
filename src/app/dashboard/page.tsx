@@ -44,10 +44,12 @@ export default function Dashboard() {
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='grid grid-cols-2 gap-4'>
-          <div className='bg-red-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-            <p className='text-xs text-gray-500'>Mis Tokens</p>
-            <p className='text-3xl font-bold text-gray-900'>{tokens}</p>
-          </div>
+          <Link href='/tokens'>
+            <div className='bg-red-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+              <p className='text-xs text-gray-500'>Mis Tokens</p>
+              <p className='text-3xl font-bold text-gray-900'>{tokens}</p>
+            </div>
+          </Link>
           <div className='bg-yellow-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
             <p className='text-xs text-gray-500'>Sin recoger</p>
             <p className='text-3xl font-bold text-gray-900'>{count('pendiente')}</p>
