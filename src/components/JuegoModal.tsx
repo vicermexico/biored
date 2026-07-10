@@ -35,7 +35,7 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
   }
 
   return (
-    <div className='fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center px-6'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center px-6' style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
       <div className='bg-gray-900 rounded-3xl w-full max-w-sm p-6 flex flex-col items-center gap-4'>
 
         {fase === 'inicio' && (
