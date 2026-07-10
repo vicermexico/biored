@@ -40,61 +40,64 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
   }
 
   return (
-    <div className='fixed inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center px-6'>
+    <div className='fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center px-6'>
+      <div className='bg-gray-900 rounded-3xl w-full max-w-sm p-8 flex flex-col items-center gap-6'>
 
-      {/* Fase inicio */}
-      {fase === 'inicio' && (
-        <div className='flex flex-col items-center gap-6 text-center'>
-          <p className='text-6xl'>🎮</p>
-          <h1 className='text-3xl font-bold text-white'>¡FELICIDADES!</h1>
-          <p className='text-gray-300 text-base'>Has ganado un juego GRATIS</p>
-          <button
-            onClick={handleVerPremio}
-            className='bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-2xl text-lg mt-2'
-          >
-            JUGAR
-          </button>
-        </div>
-      )}
-
-      {/* Fase reproduciendo / terminado */}
-      {(fase === 'reproduciendo' || fase === 'terminado') && (
-        <div className='w-full flex flex-col items-center gap-6'>
-          <video
-            ref={videoRef}
-            src={video_url}
-            className='w-full rounded-2xl object-cover'
-            style={{ maxHeight: '70vh' }}
-            playsInline
-            disablePictureInPicture
-            onEnded={() => setFase('terminado')}
-          />
-          {fase === 'terminado' && (
+        {/* Fase inicio */}
+        {fase === 'inicio' && (
+          <>
+            <p className='text-6xl'>🎮</p>
+            <h1 className='text-3xl font-bold text-white text-center'>¡FELICIDADES!</h1>
+            <p className='text-gray-300 text-base text-center'>Has ganado un juego GRATIS</p>
             <button
-              onClick={handleReclamar}
-              disabled={cargando}
-              className='bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full'
+              onClick={handleVerPremio}
+              className='bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full'
             >
-              {cargando ? 'Reclamando...' : '¡Reclamar mis tokens!'}
+              JUGAR
             </button>
-          )}
-        </div>
-      )}
+          </>
+        )}
 
-      {/* Fase reclamado */}
-      {fase === 'reclamado' && (
-        <div className='flex flex-col items-center gap-6 text-center'>
-          <p className='text-6xl'>🎉</p>
-          <h1 className='text-3xl font-bold text-white'>¡Ganaste {tokensGanados} tokens!</h1>
-          <p className='text-gray-300 text-base'>Ya fueron acreditados a tu cuenta</p>
-          <button
-            onClick={onCerrar}
-            className='bg-white text-gray-900 font-bold px-8 py-4 rounded-2xl text-lg mt-2'
-          >
-            Cerrar
-          </button>
-        </div>
-      )}
+        {/* Fase reproduciendo / terminado */}
+        {(fase === 'reproduciendo' || fase === 'terminado') && (
+          <>
+            <video
+              ref={videoRef}
+              src={video_url}
+              className='w-full rounded-2xl object-cover'
+              style={{ maxHeight: '50vh' }}
+              playsInline
+              disablePictureInPicture
+              onEnded={() => setFase('terminado')}
+            />
+            {fase === 'terminado' && (
+              <button
+                onClick={handleReclamar}
+                disabled={cargando}
+                className='bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full'
+              >
+                {cargando ? 'Reclamando...' : '¡Reclamar mis tokens!'}
+              </button>
+            )}
+          </>
+        )}
+
+        {/* Fase reclamado */}
+        {fase === 'reclamado' && (
+          <>
+            <p className='text-6xl'>🎉</p>
+            <h1 className='text-3xl font-bold text-white text-center'>¡Ganaste {tokensGanados} tokens!</h1>
+            <p className='text-gray-300 text-base text-center'>Ya fueron acreditados a tu cuenta</p>
+            <button
+              onClick={onCerrar}
+              className='bg-white text-gray-900 font-bold px-8 py-4 rounded-2xl text-lg w-full mt-2'
+            >
+              Cerrar
+            </button>
+          </>
+        )}
+
+      </div>
     </div>
   )
 }
