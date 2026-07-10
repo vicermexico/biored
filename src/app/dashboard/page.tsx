@@ -38,6 +38,14 @@ export default function Dashboard() {
   const handleCerrarJuego = () => {
     sessionStorage.setItem('juego_visto', '1')
     setJuego(null)
+    const u = localStorage.getItem('usuario')
+    if (u) {
+      const usr = JSON.parse(u)
+      fetch('/api/tokens/saldo?usuario_id=' + usr.id)
+        .then(r => r.json())
+        .then(d => setTokens(d.saldo || 0))
+        .catch(() => {})
+    }
   }
 
   const count = (estado: string) => pedidos.filter(p => p.estado === estado).length
