@@ -40,14 +40,14 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
   }
 
   return (
-    <div className='fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center px-6'>
-      <div className='bg-gray-900 rounded-3xl w-full max-w-sm p-8 flex flex-col items-center gap-6'>
+    <div className='fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center px-6'>
+      <div className='bg-gray-900 rounded-3xl w-full max-w-sm p-6 flex flex-col items-center gap-4 max-h-[80vh] overflow-y-auto'>
 
         {/* Fase inicio */}
         {fase === 'inicio' && (
           <>
-            <p className='text-6xl'>🎮</p>
-            <h1 className='text-3xl font-bold text-white text-center'>¡FELICIDADES!</h1>
+            <p className='text-4xl'>🎮</p>
+            <h1 className='text-2xl font-bold text-white text-center'>¡FELICIDADES!</h1>
             <p className='text-gray-300 text-base text-center'>Has ganado un juego GRATIS</p>
             <button
               onClick={handleVerPremio}
@@ -85,12 +85,12 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
         {/* Fase reclamado */}
         {fase === 'reclamado' && (
           <>
-            <p className='text-6xl'>🎉</p>
-            <h1 className='text-3xl font-bold text-white text-center'>¡Ganaste {tokensGanados} tokens!</h1>
+            <p className='text-4xl'>🎉</p>
+            <h1 className='text-2xl font-bold text-white text-center'>¡Ganaste {tokensGanados} tokens!</h1>
             <p className='text-gray-300 text-base text-center'>Ya fueron acreditados a tu cuenta</p>
             <button
               onClick={onCerrar}
-              className='bg-white text-gray-900 font-bold px-8 py-4 rounded-2xl text-lg w-full mt-2'
+              className='bg-white text-gray-900 font-bold px-8 py-4 rounded-2xl text-lg w-full'
             >
               Cerrar
             </button>
