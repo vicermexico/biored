@@ -4,13 +4,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import NavBar from '@/components/NavBar'
-import JuegoModal from '@/components/JuegoModal'
 
 export default function Dashboard() {
   const [usuario, setUsuario] = useState<any>(null)
   const [tokens, setTokens] = useState(0)
   const [pedidos, setPedidos] = useState<any[]>([])
-  const [juego, setJuego] = useState<{ video_url: string; tokens: number; tipo: string } | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -27,47 +25,19 @@ export default function Dashboard() {
     }).catch(() => {})
     fetch('/api/pedidos?usuario_id=' + usr.id).then(r => r.json()).then(d => setPedidos(Array.isArray(d) ? d : [])).catch(() => {})
 
-    if (!sessionStorage.getItem('juego_visto')) {
-      fetch('/api/juego/verificar?usuario_id=' + usr.id)
-        .then(r => r.json())
-        .then(d => {
-          if (d.aplica) {
-            setTimeout(() => {
-              setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo })
-            }, 5000)
-          }
-        })
-        .catch(() => {})
+    const onTokensChanged = (e: Event) => {
+      const saldo = (e as CustomEvent).detail?.saldo
+      if (typeof saldo === 'number') setTokens(saldo)
     }
+    window.addEventListener('biored:tokens-changed', onTokensChanged)
+    return () => window.removeEventListener('biored:tokens-changed', onTokensChanged)
   }, [])
-
-  const handleCerrarJuego = () => {
-    sessionStorage.setItem('juego_visto', '1')
-    setJuego(null)
-    const u = localStorage.getItem('usuario')
-    if (u) {
-      const usr = JSON.parse(u)
-      fetch('/api/tokens/saldo?usuario_id=' + usr.id)
-        .then(r => r.json())
-        .then(d => setTokens(d.saldo || 0))
-        .catch(() => {})
-    }
-  }
 
   const count = (estado: string) => pedidos.filter(p => p.estado === estado).length
 
   if (!usuario) return <div className='min-h-screen flex items-center justify-center'><p className='text-gray-400'>Cargando...</p></div>
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      {juego && (
-        <JuegoModal
-          video_url={juego.video_url}
-          tokens={juego.tokens}
-          tipo={juego.tipo}
-          usuario_id={usuario.id}
-          onCerrar={handleCerrarJuego}
-        />
-      )}
       <div className='bg-gray-900 px-6 pt-10 pb-6'>
         <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
         <p className='text-gray-300 text-sm'>Bienvenido a BIORED</p>
