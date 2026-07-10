@@ -18,7 +18,7 @@ export default function JuegoProvider() {
         if (d.aplica) {
           setTimeout(() => {
             setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo })
-          }, 5000)
+          }, 3000)
         }
       })
       .catch(() => {})
