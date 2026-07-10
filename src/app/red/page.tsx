@@ -8,6 +8,9 @@ export default function MiRed() {
   const [cargando, setCargando] = useState(true)
   const [link, setLink] = useState('')
   const [usuarioId, setUsuarioId] = useState('')
+  const [modal, setModal] = useState<{ abierto: boolean; data: any | null; cargando: boolean }>({
+    abierto: false, data: null, cargando: false,
+  })
 
   useEffect(() => {
     const u = localStorage.getItem('usuario')
@@ -33,6 +36,16 @@ export default function MiRed() {
     setNivelActivo(n)
     if (usuarioId) fetchNivel(usuarioId, n)
   }
+
+  const verInfo = (invitadoId: string) => {
+    setModal({ abierto: true, data: null, cargando: true })
+    fetch(`/api/red/info?invitado_id=${invitadoId}`)
+      .then(r => r.json())
+      .then(data => setModal({ abierto: true, data, cargando: false }))
+      .catch(() => setModal({ abierto: false, data: null, cargando: false }))
+  }
+
+  const cerrarModal = () => setModal({ abierto: false, data: null, cargando: false })
 
   const copiarLink = () => { navigator.clipboard.writeText(link); alert('Link copiado!') }
 
@@ -63,14 +76,22 @@ export default function MiRed() {
             </div>
           ) : (
             usuarios.map((u: any, i: number) => (
-              <div key={i} className='bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center'>
-                <div>
-                  <p className='font-medium text-gray-800'>{u?.nombre || 'Usuario'}</p>
+              <div key={i} className='bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center gap-3'>
+                <div className='flex-1 min-w-0'>
+                  <p className='font-medium text-gray-800 truncate'>{u?.nombre || 'Usuario'}</p>
                   <p className='text-sm text-gray-400'>{u?.celular}</p>
                 </div>
-                <span className={'text-xs font-medium px-3 py-1 rounded-full ' + (u?.activo ? 'bg-gray-200 text-gray-900' : 'bg-gray-100 text-gray-400')}>
-                  {u?.activo ? 'Activo' : 'Inactivo'}
-                </span>
+                <div className='flex items-center gap-2 flex-shrink-0'>
+                  <span className={'text-xs font-medium px-3 py-1 rounded-full ' + (u?.activo ? 'bg-gray-200 text-gray-900' : 'bg-gray-100 text-gray-400')}>
+                    {u?.activo ? 'Activo' : 'Inactivo'}
+                  </span>
+                  <button
+                    onClick={() => verInfo(u?.id)}
+                    className='text-xs font-medium px-3 py-1 rounded-full bg-red-50 text-red-600 border border-red-200'
+                  >
+                    Ver info
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -80,6 +101,40 @@ export default function MiRed() {
         </button>
       </div>
       <NavBar />
+
+      {modal.abierto && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center px-6' style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className='bg-white rounded-3xl w-full max-w-sm p-6 flex flex-col gap-4'>
+            {modal.cargando ? (
+              <div className='flex items-center justify-center py-8'>
+                <p className='text-gray-400 text-sm'>Cargando...</p>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <p className='text-xs text-gray-400'>Invitado</p>
+                  <p className='text-lg font-bold text-gray-900'>{modal.data?.nombre}</p>
+                  <p className='text-sm text-gray-500'>{modal.data?.celular}</p>
+                </div>
+                <div className='grid grid-cols-2 gap-3'>
+                  <div className='bg-gray-50 rounded-2xl p-4 flex flex-col gap-1'>
+                    <p className='text-xs text-gray-400'>Productos este mes</p>
+                    <p className='text-3xl font-bold text-gray-900'>{modal.data?.productos_mes}</p>
+                  </div>
+                  <div className='bg-red-50 rounded-2xl p-4 flex flex-col gap-1'>
+                    <p className='text-xs text-gray-400'>Tokens generados</p>
+                    <p className='text-3xl font-bold text-red-500'>{modal.data?.tokens_generados}</p>
+                  </div>
+                </div>
+                <p className='text-xs text-gray-400 text-center'>1 token por cada 12 productos comprados</p>
+              </>
+            )}
+            <button onClick={cerrarModal} className='w-full bg-gray-900 text-white font-semibold py-3 rounded-2xl text-sm'>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
