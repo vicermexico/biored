@@ -17,9 +17,21 @@ export async function POST(request: Request) {
   const nip_entrega = Math.floor(1000 + Math.random() * 9000).toString()
   const { data: pedido, error } = await supabase.from('pedidos').insert({ usuario_id, tipo, sucursal_id, sucursal_nombre, nip_entrega, estado: 'pendiente', total, total_tokens }).select().single()
   if (error) return NextResponse.json({ error: error.message, details: error.details }, { status: 500 })
+
   const detalles = items.map((item: any) => ({ pedido_id: pedido.id, producto_id: item.id, tipo, nombre_producto: item.nombre, cantidad: item.cantidad, precio_unitario: item.precio, precio_tokens_unitario: item.precio_tokens }))
   const { error: errorDetalle } = await supabase.from('detalle_pedidos').insert(detalles)
   if (errorDetalle) return NextResponse.json({ error: errorDetalle.message }, { status: 500 })
+
+  // Registrar canje en historial_tokens si es pedido biotokens
+  if (tipo === 'biotokens' && total_tokens) {
+    const numeroPedido = String(pedido.numero).padStart(4, '0')
+    await supabase.from('historial_tokens').insert({
+      usuario_id,
+      cantidad: -total_tokens,
+      motivo: `Canje BioTokens - Pedido #${numeroPedido}`,
+      fecha: new Date().toISOString(),
+    })
+  }
 
   // Notificación a drbioescaner.com — espera máximo 3s, si tarda más o falla igual retorna el pedido
   try {
