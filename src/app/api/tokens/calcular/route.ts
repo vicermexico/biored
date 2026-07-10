@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     const ahora = new Date()
     const primerDiaMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
     const ultimoDiaMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59)
+    const mesAnio = (ahora.getMonth() + 1) + '/' + ahora.getFullYear()
 
     const { data: pedidos } = await supabase
       .from('pedidos')
@@ -23,7 +24,6 @@ export async function POST(request: Request) {
     }
 
     const productosPorUsuario: Record<string, number> = {}
-
     for (const pedido of pedidos) {
       const { data: detalles } = await supabase
         .from('detalle_pedidos')
@@ -45,25 +45,28 @@ export async function POST(request: Request) {
 
     if (!redAfiliados) return NextResponse.json({ mensaje: 'Sin datos de red' })
 
-    // Mapa de ascenso: usuario_id → su referidor directo
     const referidorPorUsuario: Record<string, string> = {}
     for (const relacion of redAfiliados) {
       referidorPorUsuario[relacion.usuario_id] = relacion.referidor_id
     }
 
-    const tokensAcreditar: Record<string, number> = {}
+    // titularId → { fuenteId → cantidad }
+    // fuenteId === titularId significa tokens propios
+    const tokensDesglose: Record<string, Record<string, number>> = {}
 
-    // 1. Compras propias: cada titular activo gana tokens por sus propios productos
+    const sumar = (titularId: string, fuenteId: string, cantidad: number) => {
+      if (!tokensDesglose[titularId]) tokensDesglose[titularId] = {}
+      tokensDesglose[titularId][fuenteId] = (tokensDesglose[titularId][fuenteId] || 0) + cantidad
+    }
+
+    // 1. Compras propias
     for (const usuarioId of usuariosActivos) {
       const propios = productosPorUsuario[usuarioId] || 0
       const tokensPropios = Math.floor(propios / 12)
-      if (tokensPropios > 0) {
-        tokensAcreditar[usuarioId] = (tokensAcreditar[usuarioId] || 0) + tokensPropios
-      }
+      if (tokensPropios > 0) sumar(usuarioId, usuarioId, tokensPropios)
     }
 
-    // 2. Red hasta 5 niveles: las compras de cada afiliado suben la cadena.
-    // Un titular inactivo no recibe tokens ese nivel pero la cadena sigue subiendo.
+    // 2. Red hasta 5 niveles
     for (const [afiliadoId, productosAfiliado] of Object.entries(productosPorUsuario)) {
       if (productosAfiliado === 0) continue
       const tokensGenerados = Math.floor(productosAfiliado / 12)
@@ -74,41 +77,70 @@ export async function POST(request: Request) {
         const titularId = referidorPorUsuario[currentId]
         if (!titularId) break
         if (usuariosActivos.has(titularId)) {
-          tokensAcreditar[titularId] = (tokensAcreditar[titularId] || 0) + tokensGenerados
+          sumar(titularId, afiliadoId, tokensGenerados)
         }
         currentId = titularId
       }
     }
 
-    let totalAcreditados = 0
-    const mesAnio = (ahora.getMonth() + 1) + '/' + ahora.getFullYear()
+    // Recopilar todos los ids de afiliados (fuentes distintas al titular) para buscar nombres
+    const idsAfiliados = new Set<string>()
+    for (const [titularId, fuentes] of Object.entries(tokensDesglose)) {
+      for (const fuenteId of Object.keys(fuentes)) {
+        if (fuenteId !== titularId) idsAfiliados.add(fuenteId)
+      }
+    }
 
-    for (const [usuarioId, cantidad] of Object.entries(tokensAcreditar)) {
+    const nombresPorId: Record<string, string> = {}
+    if (idsAfiliados.size > 0) {
+      const { data: usuarios } = await supabase
+        .from('usuarios')
+        .select('id, nombre')
+        .in('id', Array.from(idsAfiliados))
+      for (const u of usuarios || []) {
+        nombresPorId[u.id] = u.nombre
+      }
+    }
+
+    let totalAcreditados = 0
+
+    for (const [titularId, fuentes] of Object.entries(tokensDesglose)) {
+      const totalTitular = Object.values(fuentes).reduce((sum, n) => sum + n, 0)
+
+      // Actualizar saldo
       const { data: tokenActual } = await supabase
         .from('tokens')
         .select('saldo')
-        .eq('usuario_id', usuarioId)
+        .eq('usuario_id', titularId)
         .single()
 
-      const nuevoSaldo = (tokenActual?.saldo || 0) + cantidad
+      const nuevoSaldo = (tokenActual?.saldo || 0) + totalTitular
+      await supabase.from('tokens').update({ saldo: nuevoSaldo }).eq('usuario_id', titularId)
 
-      await supabase.from('tokens').update({ saldo: nuevoSaldo }).eq('usuario_id', usuarioId)
-
-      await supabase.from('historial_tokens').insert({
-        usuario_id: usuarioId,
-        cantidad,
-        motivo: 'Corte mensual ' + mesAnio,
-        fecha: new Date().toISOString()
+      // Insertar un registro por cada fuente
+      const registros = Object.entries(fuentes).map(([fuenteId, cantidad]) => {
+        const esPropios = fuenteId === titularId
+        const motivo = esPropios
+          ? `Tokens propios - ${mesAnio}`
+          : `Tokens de ${nombresPorId[fuenteId] || fuenteId} - ${mesAnio}`
+        return {
+          usuario_id: titularId,
+          cantidad,
+          motivo,
+          fecha: new Date().toISOString(),
+        }
       })
 
-      totalAcreditados += cantidad
+      await supabase.from('historial_tokens').insert(registros)
+
+      totalAcreditados += totalTitular
     }
 
     return NextResponse.json({
       mensaje: 'Calculo completado',
       usuariosActivos: usuariosActivos.size,
       tokensAcreditados: totalAcreditados,
-      detalle: tokensAcreditar
+      detalle: tokensDesglose,
     })
 
   } catch (e) {
