@@ -3,7 +3,8 @@ import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-export default function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {  const { id } = use(params)
+export default function DetalleProducto({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [producto, setProducto] = useState<any>(null)
   const [cantidad, setCantidad] = useState(1)
   const [videoTerminado, setVideoTerminado] = useState(false)
@@ -39,8 +40,16 @@ export default function DetalleProducto({ params }: { params: Promise<{ id: stri
 
   const handleAgregar = () => {
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]')
+    if (carrito.length > 0 && carrito[0].tipo !== 'biored') {
+      alert('Tu carrito tiene productos de BioTokens. Termina o vacía ese pedido antes de agregar productos BIORED.')
+      return
+    }
     const existe = carrito.find((i: any) => i.id === producto.id)
-    if (existe) { existe.cantidad += cantidad } else { carrito.push({ id: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad, tipo: 'biored', drbioescaner_producto_id: producto.drbioescaner_producto_id || null, foto_url: producto.foto_url || null }) }
+    if (existe) {
+      existe.cantidad += cantidad
+    } else {
+      carrito.push({ id: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad, tipo: 'biored', drbioescaner_producto_id: producto.drbioescaner_producto_id || null, foto_url: producto.foto_url || null })
+    }
     localStorage.setItem('carrito', JSON.stringify(carrito))
     router.push('/carrito')
   }

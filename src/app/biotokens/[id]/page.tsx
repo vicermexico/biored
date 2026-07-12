@@ -3,7 +3,8 @@ import { useState, useEffect, use, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-export default function DetalleBiotoken({ params }: { params: Promise<{ id: string }> }) {  const { id } = use(params)
+export default function DetalleBiotoken({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const [producto, setProducto] = useState<any>(null)
   const [cantidad, setCantidad] = useState(1)
   const [tokensDisponibles, setTokensDisponibles] = useState(0)
@@ -38,8 +39,16 @@ export default function DetalleBiotoken({ params }: { params: Promise<{ id: stri
   const handleAgregar = () => {
     if (cantidad * producto.precio_tokens > tokensDisponibles) { alert('Tokens insuficientes'); return }
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]')
+    if (carrito.length > 0 && carrito[0].tipo !== 'biotokens') {
+      alert('Tu carrito tiene productos BIORED. Termina o vacía ese pedido antes de agregar productos BioTokens.')
+      return
+    }
     const existe = carrito.find((i: any) => i.id === producto.id)
-    if (existe) { existe.cantidad += cantidad } else { carrito.push({ id: producto.id, nombre: producto.nombre, precio_tokens: producto.precio_tokens, cantidad, tipo: 'biotokens', foto_url: producto.foto_url || null, drbioescaner_producto_id: producto.drbioescaner_producto_id || null }) }
+    if (existe) {
+      existe.cantidad += cantidad
+    } else {
+      carrito.push({ id: producto.id, nombre: producto.nombre, precio_tokens: producto.precio_tokens, cantidad, tipo: 'biotokens', foto_url: producto.foto_url || null, drbioescaner_producto_id: producto.drbioescaner_producto_id || null })
+    }
     localStorage.setItem('carrito', JSON.stringify(carrito))
     router.push('/carrito')
   }
@@ -111,7 +120,8 @@ export default function DetalleBiotoken({ params }: { params: Promise<{ id: stri
             <div className='flex items-center gap-4'>
               <button onClick={() => setCantidad(Math.max(1, cantidad - 1))} className='w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg font-bold'>-</button>
               <span className='text-lg font-bold'>{cantidad}</span>
-              <button onClick={() => setCantidad(cantidad + 1)} className='w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-lg font-bold'>+</button>            </div>
+              <button onClick={() => setCantidad(cantidad + 1)} className='w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-lg font-bold'>+</button>
+            </div>
           </div>
           <Button onClick={handleAgregar} className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 rounded-2xl'>Agregar al carrito</Button>
         </div>
