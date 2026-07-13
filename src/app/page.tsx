@@ -6,10 +6,13 @@ export default function Home() {
   const [config, setConfig] = useState<any>(null)
   const [iniciado, setIniciado] = useState(false)
   const [videoTerminado, setVideoTerminado] = useState(false)
+  const [pulso, setPulso] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     fetch('/api/configuracion').then(r => r.json()).then(d => setConfig(d)).catch(() => {})
+    const interval = setInterval(() => setPulso(p => !p), 1200)
+    return () => clearInterval(interval)
   }, [])
 
   const handleEntrar = () => {
@@ -60,9 +63,19 @@ export default function Home() {
               <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
               <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
             </div>
-            <button onClick={handleEntrar} className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'>
-              Entrar
-            </button>
+            <div className='flex flex-col items-center gap-2 w-full'>
+              <button
+                onClick={handleEntrar}
+                style={{
+                  opacity: pulso ? 1 : 0.5,
+                  transition: 'opacity 0.6s ease-in-out',
+                }}
+                className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'
+              >
+                Iniciar sesión
+              </button>
+              <p className='text-white text-xs opacity-50'>Da clic para entrar a tu panel DrBioRed</p>
+            </div>
           </div>
         </div>
       )}
@@ -72,7 +85,7 @@ export default function Home() {
           <h1 className='text-4xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
           <div className='w-full max-w-sm flex flex-col gap-3'>
             <Link href='/login' className='w-full'>
-              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-4 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
+              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-4 text-base rounded-2xl shadow-lg'>Iniciar sesión</button>
             </Link>
           </div>
         </div>
@@ -84,10 +97,11 @@ export default function Home() {
             <h1 className='text-5xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
             <p className='text-white mt-2 text-sm opacity-90' style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>Tu red de bienestar</p>
           </div>
-          <div className='flex flex-col gap-4 w-full'>
+          <div className='flex flex-col gap-3 w-full items-center'>
             <Link href='/login' className='w-full'>
-              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
+              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Iniciar sesión</button>
             </Link>
+            <p className='text-white text-xs opacity-50'>Da clic para entrar a tu panel DrBioRed</p>
           </div>
         </div>
       )}

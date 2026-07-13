@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 type Fase = 'inicio' | 'reproduciendo' | 'terminado'
 
@@ -14,7 +14,9 @@ interface Props {
 export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerrar }: Props) {
   const [fase, setFase] = useState<Fase>('inicio')
   const [cargando, setCargando] = useState(false)
+  const [confeti, setConfeti] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const handleJugar = () => {
     setFase('reproduciendo')
@@ -31,51 +33,97 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
       })
     } catch {}
     setCargando(false)
-    onCerrar()
+    setConfeti(true)
+    setTimeout(() => onCerrar(), 3000)
   }
 
+  useEffect(() => {
+    if (!confeti) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const colors = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6']
+    const particles: any[] = []
+    for (let i = 0; i < 150; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        w: Math.random() * 10 + 5,
+        h: Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: Math.random() * 4 + 2,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.2,
+      })
+    }
+    let frame: number
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      let alive = false
+      particles.forEach(p => {
+        p.y += p.speed
+        p.angle += p.spin
+        if (p.y < canvas.height + 20) alive = true
+        ctx.save()
+        ctx.translate(p.x, p.y)
+        ctx.rotate(p.angle)
+        ctx.fillStyle = p.color
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+        ctx.restore()
+      })
+      if (alive) frame = requestAnimationFrame(draw)
+    }
+    frame = requestAnimationFrame(draw)
+    return () => cancelAnimationFrame(frame)
+  }, [confeti])
+
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center px-6' style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
-      <div className='bg-gray-900 rounded-3xl w-full max-w-sm p-6 flex flex-col items-center gap-4'>
-
-        {fase === 'inicio' && (
-          <>
-            <p className='text-4xl'>🎮</p>
-            <h1 className='text-2xl font-bold text-white text-center'>¡FELICIDADES!</h1>
-            <p className='text-gray-300 text-sm text-center'>Has ganado un juego GRATIS</p>
-            <button
-              onClick={handleJugar}
-              className='bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full mt-2'
-            >
-              JUGAR
-            </button>
-          </>
-        )}
-
-        {(fase === 'reproduciendo' || fase === 'terminado') && (
-          <>
-            <video
-              ref={videoRef}
-              src={video_url}
-              className='w-full rounded-2xl object-cover'
-              style={{ maxHeight: '50vh' }}
-              playsInline
-              disablePictureInPicture
-              onEnded={() => setFase('terminado')}
-            />
-            {fase === 'terminado' && (
+    <>
+      {confeti && (
+        <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }} />
+      )}
+      <div className='fixed inset-0 z-50 flex items-center justify-center px-6' style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+        <div className='bg-gray-900 rounded-3xl w-full max-w-sm p-6 flex flex-col items-center gap-4'>
+          {fase === 'inicio' && (
+            <>
+              <p className='text-4xl'>🎮</p>
+              <h1 className='text-2xl font-bold text-white text-center'>¡FELICIDADES!</h1>
+              <p className='text-gray-300 text-sm text-center'>Has ganado un juego GRATIS</p>
               <button
-                onClick={handleReclamar}
-                disabled={cargando}
-                className='bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full'
+                onClick={handleJugar}
+                className='bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full mt-2'
               >
-                {cargando ? 'Reclamando...' : '¡Reclamar mis tokens!'}
+                JUGAR
               </button>
-            )}
-          </>
-        )}
-
+            </>
+          )}
+          {(fase === 'reproduciendo' || fase === 'terminado') && (
+            <>
+              <video
+                ref={videoRef}
+                src={video_url}
+                className='w-full rounded-2xl object-cover'
+                style={{ maxHeight: '50vh' }}
+                playsInline
+                disablePictureInPicture
+                onEnded={() => setFase('terminado')}
+              />
+              {fase === 'terminado' && (
+                <button
+                  onClick={handleReclamar}
+                  disabled={cargando}
+                  className='bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full'
+                >
+                  {cargando ? 'Reclamando...' : '¡Reclamar mis tokens!'}
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
