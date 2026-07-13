@@ -63,30 +63,32 @@ export default function Home() {
               <h1 className='text-5xl font-bold text-white tracking-tight'>DR BIO<span className='text-red-400'>RED</span></h1>
               <p className='text-white mt-2 text-sm opacity-80'>Tu red de bienestar</p>
             </div>
-            <div className='flex flex-col items-center gap-2 w-full'>
-              <button
-                onClick={handleEntrar}
-                style={{
-                  opacity: pulso ? 1 : 0.5,
-                  transition: 'opacity 0.6s ease-in-out',
-                }}
-                className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'
-              >
-                Iniciar sesión
-              </button>
-              <p className='text-white text-xs opacity-50'>Da clic para entrar a tu panel DrBioRed</p>
-            </div>
+            <button
+              onClick={handleEntrar}
+              className='w-full bg-white text-gray-900 font-semibold py-6 text-base rounded-2xl'
+            >
+              Entrar
+            </button>
           </div>
         </div>
       )}
 
       {mostrarVideo && (
-        <div className='absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-6'>
+        <div className='absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 px-6'>
           <h1 className='text-4xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
-          <div className='w-full max-w-sm flex flex-col gap-3'>
+          <div className='w-full max-w-sm flex flex-col items-center gap-2'>
             <Link href='/login' className='w-full'>
-              <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-4 text-base rounded-2xl shadow-lg'>Iniciar sesión</button>
+              <button
+                style={{
+                  opacity: pulso ? 1 : 0.4,
+                  transition: 'opacity 0.8s ease-in-out',
+                }}
+                className='w-full bg-white text-gray-900 font-semibold py-4 text-base rounded-2xl shadow-lg'
+              >
+                Iniciar sesión
+              </button>
             </Link>
+            <p className='text-white text-xs opacity-60' style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>Da clic para entrar a tu panel DrBioRed</p>
           </div>
         </div>
       )}
@@ -101,7 +103,7 @@ export default function Home() {
             <Link href='/login' className='w-full'>
               <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Iniciar sesión</button>
             </Link>
-            <p className='text-white text-xs opacity-50'>Da clic para entrar a tu panel DrBioRed</p>
+            <p className='text-white text-xs opacity-50' style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>Da clic para entrar a tu panel DrBioRed</p>
           </div>
         </div>
       )}
