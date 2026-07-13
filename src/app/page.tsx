@@ -29,7 +29,6 @@ export default function Home() {
   return (
     <main className='min-h-screen relative overflow-hidden bg-black'>
 
-      {/* Único elemento video — siempre en el DOM, visibilidad controlada por CSS */}
       {config?.video_url && (
         <video
           ref={videoRef}
@@ -48,14 +47,12 @@ export default function Home() {
         />
       )}
 
-      {/* Imagen final — aparece solo cuando el video termina */}
       {mostrarFinal && (
         config?.imagen_url
           ? <img src={config.imagen_url} className='absolute inset-0 w-full h-full object-cover' />
           : <div className='absolute inset-0 bg-white' />
       )}
 
-      {/* Overlay splash inicial */}
       {!iniciado && (
         <div className='absolute inset-0 z-10 flex flex-col items-center justify-center bg-black'>
           <div className='flex flex-col items-center gap-8 px-6 w-full max-w-sm'>
@@ -70,7 +67,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Overlay durante la reproducción del video */}
       {mostrarVideo && (
         <div className='absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-6'>
           <h1 className='text-4xl font-bold text-white tracking-tight' style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>DR BIO<span className='text-red-400'>RED</span></h1>
@@ -78,14 +74,10 @@ export default function Home() {
             <Link href='/login' className='w-full'>
               <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-4 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
             </Link>
-            <Link href='/registro' className='w-full'>
-              <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-4 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
-            </Link>
           </div>
         </div>
       )}
 
-      {/* Overlay pantalla final */}
       {mostrarFinal && (
         <div className='relative z-10 flex flex-col items-center justify-center gap-8 px-6 w-full max-w-sm mx-auto min-h-screen'>
           <div className='text-center'>
@@ -95,9 +87,6 @@ export default function Home() {
           <div className='flex flex-col gap-4 w-full'>
             <Link href='/login' className='w-full'>
               <button className='w-full bg-white text-gray-900 hover:bg-gray-100 font-semibold py-6 text-base rounded-2xl shadow-lg'>Ya tengo cuenta</button>
-            </Link>
-            <Link href='/registro' className='w-full'>
-              <button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 text-base rounded-2xl shadow-lg'>Se parte de nosotros</button>
             </Link>
           </div>
         </div>
