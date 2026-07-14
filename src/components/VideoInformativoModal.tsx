@@ -21,10 +21,22 @@ export default function VideoInformativoModal({ videos, usuario_id, onTerminar }
   const video = videos[indice]
 
   useEffect(() => {
-    if (video && videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch(() => {})
-      registrarVista(video.id)
+    const v = videoRef.current
+    if (!v || !video) return
+    v.load()
+    v.play().catch(() => {})
+    registrarVista(video.id)
+
+    const handleEnded = () => cerrar()
+    const handleTimeUpdate = () => {
+      if (v.duration && v.currentTime >= v.duration - 0.3) cerrar()
+    }
+
+    v.addEventListener('ended', handleEnded)
+    v.addEventListener('timeupdate', handleTimeUpdate)
+    return () => {
+      v.removeEventListener('ended', handleEnded)
+      v.removeEventListener('timeupdate', handleTimeUpdate)
     }
   }, [indice])
 
@@ -47,20 +59,17 @@ export default function VideoInformativoModal({ videos, usuario_id, onTerminar }
   if (!video) return null
 
   return (
-    <div
-      className='fixed inset-0 z-50 flex items-center justify-center px-4'
-      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-    >
-      <div className='relative w-full max-w-lg bg-black rounded-3xl overflow-hidden shadow-2xl'>
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="relative w-full max-w-lg bg-black rounded-3xl overflow-hidden shadow-2xl">
         <button
           onClick={cerrar}
-          className='absolute top-3 right-3 z-10 bg-black bg-opacity-60 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold hover:bg-opacity-80'
+          className="absolute top-3 right-3 z-10 bg-black bg-opacity-60 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold"
         >
-          ✕
+          X
         </button>
 
         {videos.length > 1 && (
-          <div className='absolute top-3 left-3 z-10 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full'>
+          <div className="absolute top-3 left-3 z-10 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
             {indice + 1} / {videos.length}
           </div>
         )}
@@ -68,16 +77,16 @@ export default function VideoInformativoModal({ videos, usuario_id, onTerminar }
         <video
           ref={videoRef}
           src={video.video_url}
-          className='w-full'
-          style={{ maxHeight: '70vh', pointerEvents: 'none' }}
+          className="w-full"
+          style={{ maxHeight: '70vh' }}
           playsInline
           disablePictureInPicture
-          onEnded={cerrar}
+          muted
         />
 
         {video.titulo && (
-          <div className='bg-gray-900 px-4 py-3'>
-            <p className='text-white text-sm font-medium'>{video.titulo}</p>
+          <div className="bg-gray-900 px-4 py-3">
+            <p className="text-white text-sm font-medium">{video.titulo}</p>
           </div>
         )}
       </div>
