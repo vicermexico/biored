@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import NavBar from '@/components/NavBar'
+import VideoInformativoModal from '@/components/VideoInformativoModal'
 
 export default function Dashboard() {
   const [usuario, setUsuario] = useState<any>(null)
   const [tokens, setTokens] = useState(0)
-  const [pedidos, setPedidos] = useState<any[]>([])
+  const [videos, setVideos] = useState<any[]>([])
+  const [mostrarVideos, setMostrarVideos] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -23,49 +25,59 @@ export default function Dashboard() {
         localStorage.setItem('usuario', JSON.stringify(d.usuario))
       }
     }).catch(() => {})
-    fetch('/api/pedidos?usuario_id=' + usr.id).then(r => r.json()).then(d => setPedidos(Array.isArray(d) ? d : [])).catch(() => {})
-
-    const onTokensChanged = (e: Event) => {
-      const saldo = (e as CustomEvent).detail?.saldo
-      if (typeof saldo === 'number') setTokens(saldo)
-    }
-    window.addEventListener('biored:tokens-changed', onTokensChanged)
-    return () => window.removeEventListener('biored:tokens-changed', onTokensChanged)
+    fetch('/api/videos-informativos?usuario_id=' + usr.id).then(r => r.json()).then(d => {
+      if (d.length > 0) {
+        setVideos(d)
+        setMostrarVideos(true)
+      }
+    }).catch(() => {})
   }, [])
 
-  const count = (estado: string) => pedidos.filter(p => p.estado === estado).length
+  const handleSalir = () => {
+    if (confirm('¿Seguro que quieres cerrar sesión?')) {
+      localStorage.removeItem('usuario')
+      localStorage.removeItem('carrito')
+      router.push('/')
+    }
+  }
 
   if (!usuario) return <div className='min-h-screen flex items-center justify-center'><p className='text-gray-400'>Cargando...</p></div>
+
   return (
     <main className='min-h-screen bg-gray-50 pb-24'>
-      <div className='bg-gray-900 px-6 pt-10 pb-6'>
-        <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
-        <p className='text-gray-300 text-sm'>Bienvenido a BIORED</p>
+      {mostrarVideos && videos.length > 0 && (
+        <VideoInformativoModal
+          videos={videos}
+          usuario_id={usuario.id}
+          onTerminar={() => setMostrarVideos(false)}
+        />
+      )}
+
+      <div className='bg-green-700 px-6 pt-10 pb-6 flex justify-between items-start'>
+        <div>
+          <h1 className='text-2xl font-bold text-white'>Hola, {usuario.nombre}</h1>
+          <p className='text-green-200 text-sm'>Bienvenido a BIORED</p>
+        </div>
+        <button onClick={handleSalir} className='bg-white text-green-700 font-bold px-4 py-2 rounded-xl text-sm'>Salir</button>
       </div>
       <div className='px-6 py-6 flex flex-col gap-4'>
         <div className='grid grid-cols-2 gap-4'>
-          <Link href='/tokens'>
-            <div className='bg-red-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-              <p className='text-xs text-gray-500'>Mis Tokens</p>
-              <p className='text-3xl font-bold text-gray-900'>{tokens}</p>
-            </div>
-          </Link>
-          <div className='bg-yellow-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-            <p className='text-xs text-gray-500'>Sin recoger</p>
-            <p className='text-3xl font-bold text-gray-900'>{count('pendiente')}</p>
+          <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+            <p className='text-xs text-gray-400'>Mis Tokens</p>
+            <p className='text-3xl font-bold text-green-700'>{tokens}</p>
           </div>
-          <div className='bg-yellow-100 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-            <p className='text-xs text-gray-500'>Listos para recoger</p>
-            <p className='text-3xl font-bold text-gray-900'>{count('separado')}</p>
+          <div className='bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
+            <p className='text-xs text-gray-400'>Invitados activos</p>
+            <p className='text-3xl font-bold text-green-700'>0</p>
           </div>
-          <div className='bg-green-50 rounded-2xl p-4 flex flex-col gap-1 shadow-sm'>
-            <p className='text-xs text-gray-500'>Entregados</p>
-            <p className='text-3xl font-bold text-gray-900'>{count('entregado')}</p>
-          </div>
+        </div>
+        <div className='bg-white rounded-2xl p-4 shadow-sm'>
+          <p className='text-xs text-gray-400 mb-3'>Pedidos recientes</p>
+          <p className='text-sm text-gray-400 text-center py-4'>Aun no tienes pedidos</p>
         </div>
         <div className='flex flex-col gap-3'>
           <Link href='/catalogo'>
-            <Button className='w-full bg-gray-900 hover:bg-black text-white font-semibold py-6 rounded-2xl'>Catalogo BIORED</Button>
+            <Button className='w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-6 rounded-2xl'>Catalogo BIORED</Button>
           </Link>
           <Link href='/biotokens'>
             <Button className='w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-6 rounded-2xl'>Catalogo BioTokens</Button>
