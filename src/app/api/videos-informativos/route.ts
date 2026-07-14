@@ -6,15 +6,14 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const usuario_id = searchParams.get('usuario_id')
+  const master = searchParams.get('master')
 
-  const { data: videos } = await supabase
-    .from('videos_informativos')
-    .select('*')
-    .eq('activo', true)
-    .order('created_at', { ascending: true })
+  let query = supabase.from('videos_informativos').select('*').order('created_at', { ascending: true })
+  if (!master) query = query.eq('activo', true)
+
+  const { data: videos } = await query
 
   if (!videos || videos.length === 0) return NextResponse.json([])
-
   if (!usuario_id) return NextResponse.json(videos)
 
   const { data: vistas } = await supabase
@@ -23,7 +22,7 @@ export async function GET(request: Request) {
     .eq('usuario_id', usuario_id)
 
   const videosPendientes = videos.filter(v => {
-    const vista = vistas?.find(vw => vw.video_id === v.id)
+    const vista = vistas?.find((vw: any) => vw.video_id === v.id)
     return !vista || vista.vistas < v.veces_mostrar
   })
 

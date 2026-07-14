@@ -15,7 +15,7 @@ export default function MasterVideos() {
   useEffect(() => { cargar() }, [])
 
   const cargar = () => {
-    fetch('/api/videos-informativos').then(r => r.json()).then(d => { setVideos(d); setCargando(false) })
+    fetch('/api/videos-informativos?master=1').then(r => r.json()).then(d => { setVideos(d); setCargando(false) })
   }
 
   const subirVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,39 +79,19 @@ export default function MasterVideos() {
         {modo === 'agregar' && (
           <div className='bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-3 border-2 border-green-500'>
             <p className='font-medium text-gray-700'>Nuevo video informativo</p>
-
-            <input
-              type='text'
-              placeholder='Título (opcional)'
-              value={form.titulo}
-              onChange={e => setForm({ ...form, titulo: e.target.value })}
-              className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500'
-            />
-
+            <input type='text' placeholder='Título (opcional)' value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
             <div className='flex flex-col gap-1'>
               <label className='text-xs text-gray-500'>¿Cuántas veces se mostrará al usuario?</label>
-              <input
-                type='number'
-                min={1}
-                value={form.veces_mostrar}
-                onChange={e => setForm({ ...form, veces_mostrar: parseInt(e.target.value) || 1 })}
-                className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500'
-              />
+              <input type='number' min={1} value={form.veces_mostrar} onChange={e => setForm({ ...form, veces_mostrar: parseInt(e.target.value) || 1 })} className='border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500' />
             </div>
-
             <div className='flex flex-col gap-1'>
               <label className='text-xs text-gray-500'>Video (mp4)</label>
               <input ref={inputRef} type='file' accept='video/mp4' className='hidden' onChange={subirVideo} />
-              <button
-                onClick={() => inputRef.current?.click()}
-                disabled={subiendo}
-                className='bg-green-700 text-white text-sm px-4 py-2 rounded-xl font-medium disabled:opacity-50'
-              >
+              <button onClick={() => inputRef.current?.click()} disabled={subiendo} className='bg-green-700 text-white text-sm px-4 py-2 rounded-xl font-medium disabled:opacity-50'>
                 {subiendo ? 'Subiendo...' : 'Subir video mp4'}
               </button>
               {form.video_url && <p className='text-xs text-green-600 font-medium'>✓ Video cargado</p>}
             </div>
-
             <div className='flex gap-2'>
               <Button onClick={handleGuardar} disabled={!form.video_url || subiendo} className='flex-1 bg-green-700 hover:bg-green-800 text-white rounded-xl py-6'>Guardar</Button>
               <Button onClick={() => { setModo('ninguno'); setForm({ titulo: '', veces_mostrar: 1, video_url: '' }) }} className='flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl py-6'>Cancelar</Button>
@@ -136,13 +116,13 @@ export default function MasterVideos() {
               </div>
               <div className='flex gap-2'>
                 <button
-                  onClick={(e) => { e.stopPropagation(); toggleActivo(v.id, v.activo) }}
+                  onClick={() => toggleActivo(v.id, v.activo)}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium ${v.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
                 >
                   {v.activo ? '● Activo' : '○ Inactivo'}
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); eliminar(v.id) }}
+                  onClick={() => eliminar(v.id)}
                   className='bg-red-50 text-red-500 px-4 py-2 rounded-xl text-sm font-medium'
                 >
                   Eliminar
