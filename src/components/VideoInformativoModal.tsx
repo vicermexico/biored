@@ -71,7 +71,7 @@ export default function VideoInformativoModal({ videos, usuario_id, onTerminar }
       <div className="relative w-full max-w-lg bg-black rounded-3xl overflow-hidden shadow-2xl">
         <button
           onClick={cerrar}
-          className="absolute top-3 right-3 z-10 bg-black bg-opacity-60 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold hover:bg-opacity-80"
+          className="absolute top-3 right-3 z-10 bg-black bg-opacity-60 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold hover:bg-opacity-80"
           style={{ fontSize: 18 }}
         >
           ✕
@@ -90,7 +90,6 @@ export default function VideoInformativoModal({ videos, usuario_id, onTerminar }
           style={{ maxHeight: '70vh', pointerEvents: 'none' }}
           playsInline
           disablePictureInPicture
-          muted
         />
 
         {video.titulo && (
