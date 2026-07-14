@@ -133,14 +133,19 @@ export default function MasterVideos() {
                   <p className='font-medium text-gray-800'>{v.titulo || 'Sin título'}</p>
                   <p className='text-xs text-gray-400 mt-1'>Se muestra {v.veces_mostrar} {v.veces_mostrar === 1 ? 'vez' : 'veces'}</p>
                 </div>
-                <button onClick={() => eliminar(v.id)} className='text-red-400 text-lg font-bold leading-none'>✕</button>
               </div>
               <div className='flex gap-2'>
                 <button
-                  onClick={() => toggleActivo(v.id, v.activo)}
+                  onClick={(e) => { e.stopPropagation(); toggleActivo(v.id, v.activo) }}
                   className={`flex-1 py-2 rounded-xl text-sm font-medium ${v.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
                 >
                   {v.activo ? '● Activo' : '○ Inactivo'}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); eliminar(v.id) }}
+                  className='bg-red-50 text-red-500 px-4 py-2 rounded-xl text-sm font-medium'
+                >
+                  Eliminar
                 </button>
               </div>
             </div>
