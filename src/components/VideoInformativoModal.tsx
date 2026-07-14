@@ -69,9 +69,9 @@ export default function VideoInformativoModal({ videos, usuario_id, onTerminar }
           ref={videoRef}
           src={video.video_url}
           className='w-full'
-          style={{ maxHeight: '70vh' }}
+          style={{ maxHeight: '70vh', pointerEvents: 'none' }}
           playsInline
-          controls
+          disablePictureInPicture
           onEnded={cerrar}
         />
 
