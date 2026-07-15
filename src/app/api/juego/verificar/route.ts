@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!)
 
 export async function GET(request: Request) {
@@ -11,47 +10,50 @@ export async function GET(request: Request) {
   const { data: config } = await supabase.from('configuracion').select('*').single()
   if (!config) return NextResponse.json({ aplica: false })
 
-  console.log('[juego/verificar] config:', JSON.stringify(config))
-
   const video_url = config.juego_video_url || ''
   const tokens = config.juego_tokens || 0
 
-  // Condición 1: por compra de productos
+  // Condicion 1: por compra acumulada de productos
   if (config.juego_por_compra_activo) {
-    // Cantidad 0 o null = modo prueba: aplica a cualquier usuario
-    if (!config.juego_por_compra_cantidad) {
+    const cantidad_requerida = config.juego_por_compra_cantidad || 0
+
+    if (!cantidad_requerida) {
       return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
     }
 
-    const { data: yaReclamado } = await supabase
+    // Total de productos entregados del usuario
+    const { data: pedidos } = await supabase
+      .from('pedidos')
+      .select('id')
+      .eq('usuario_id', usuario_id)
+      .eq('estado', 'entregado')
+      .eq('tipo', 'biored')
+
+    let totalProductos = 0
+    if (pedidos && pedidos.length > 0) {
+      const { data: detalles } = await supabase
+        .from('detalle_pedidos')
+        .select('cantidad')
+        .in('pedido_id', pedidos.map((p: any) => p.id))
+      totalProductos = (detalles || []).reduce((sum: number, d: any) => sum + d.cantidad, 0)
+    }
+
+    // Cuantas ruletas ya se dieron por compra
+    const { data: historial } = await supabase
       .from('juego_historial')
       .select('id')
       .eq('usuario_id', usuario_id)
       .eq('tipo', 'compra')
-      .single()
 
-    if (!yaReclamado) {
-      const { data: pedidos } = await supabase
-        .from('pedidos')
-        .select('id')
-        .eq('usuario_id', usuario_id)
-        .eq('estado', 'entregado')
+    const ruletasDadas = historial?.length || 0
+    const ruletasCorresponden = Math.floor(totalProductos / cantidad_requerida)
 
-      if (pedidos && pedidos.length > 0) {
-        const { data: detalles } = await supabase
-          .from('detalle_pedidos')
-          .select('cantidad')
-          .in('pedido_id', pedidos.map(p => p.id))
-
-        const total = (detalles || []).reduce((sum, d) => sum + d.cantidad, 0)
-        if (total >= config.juego_por_compra_cantidad) {
-          return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
-        }
-      }
+    if (ruletasCorresponden > ruletasDadas) {
+      return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
     }
   }
 
-  // Condición 2: por invitado que compra
+  // Condicion 2: por invitado que compra por primera vez
   if (config.juego_por_invitado_activo) {
     const { data: yaReclamado } = await supabase
       .from('juego_historial')
@@ -78,9 +80,8 @@ export async function GET(request: Request) {
             const { data: detalles } = await supabase
               .from('detalle_pedidos')
               .select('cantidad')
-              .in('pedido_id', pedidosInvitado.map(p => p.id))
-
-            const total = (detalles || []).reduce((sum, d) => sum + d.cantidad, 0)
+              .in('pedido_id', pedidosInvitado.map((p: any) => p.id))
+            const total = (detalles || []).reduce((sum: number, d: any) => sum + d.cantidad, 0)
             if (total >= 6) {
               return NextResponse.json({ aplica: true, tipo: 'invitado', video_url, tokens })
             }
