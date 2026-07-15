@@ -37,6 +37,12 @@ export default function Dashboard() {
         }
       }).catch(() => {})
     }
+
+    const handleTokensChanged = (e: any) => {
+      setTokens(e.detail.saldo)
+    }
+    window.addEventListener('biored:tokens-changed', handleTokensChanged)
+    return () => window.removeEventListener('biored:tokens-changed', handleTokensChanged)
   }, [])
 
   const handleTerminarVideos = () => {
