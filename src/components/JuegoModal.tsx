@@ -14,7 +14,7 @@ interface Props {
 export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerrar }: Props) {
   const [fase, setFase] = useState<Fase>('inicio')
   const [cargando, setCargando] = useState(false)
-  const [confeti, setConfeti] = useState(false)
+  const [confeti, setConfeti] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -79,6 +79,7 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
         ctx.restore()
       })
       if (alive) frame = requestAnimationFrame(draw)
+      else setConfeti(false)
     }
     frame = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(frame)
@@ -89,14 +90,14 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
       {confeti && (
         <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }} />
       )}
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-6" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
-        <div className="bg-gray-900 rounded-3xl w-full max-w-sm p-6 flex flex-col items-center gap-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+        <div className="bg-gray-900 rounded-3xl w-full flex flex-col items-center gap-4 overflow-hidden" style={{ maxWidth: 480, minHeight: '80vh', justifyContent: 'center', padding: '2rem' }}>
           {fase === 'inicio' && (
             <>
-              <p className="text-4xl">🎮</p>
-              <h1 className="text-2xl font-bold text-white text-center">FELICIDADES!</h1>
-              <p className="text-gray-300 text-sm text-center">Has ganado un juego GRATIS</p>
-              <button onClick={handleJugar} className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full mt-2">
+              <p className="text-6xl">🎮</p>
+              <h1 className="text-3xl font-bold text-white text-center">FELICIDADES!</h1>
+              <p className="text-gray-300 text-base text-center">Has ganado un juego GRATIS</p>
+              <button onClick={handleJugar} className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-5 rounded-2xl text-xl w-full mt-4">
                 JUGAR
               </button>
             </>
@@ -107,7 +108,7 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
                 ref={videoRef}
                 src={video_url}
                 className="w-full rounded-2xl object-cover"
-                style={{ maxHeight: '50vh' }}
+                style={{ maxHeight: '60vh' }}
                 playsInline
                 disablePictureInPicture
                 onEnded={() => setFase('terminado')}
@@ -116,7 +117,7 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
                 <button
                   onClick={handleReclamar}
                   disabled={cargando}
-                  className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-8 py-4 rounded-2xl text-lg w-full"
+                  className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold px-8 py-5 rounded-2xl text-xl w-full"
                 >
                   {cargando ? 'Reclamando...' : 'Reclamar mis tokens!'}
                 </button>

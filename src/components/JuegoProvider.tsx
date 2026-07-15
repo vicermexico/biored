@@ -27,22 +27,16 @@ export default function JuegoProvider() {
               if (!sessionStorage.getItem('videos_informativos_activos')) {
                 setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo })
               }
-            }, 3000)
+            }, 1000)
           }
         })
         .catch(() => {})
     }
 
-    const handleVideosTerminados = () => {
-      verificar()
-    }
-
+    const handleVideosTerminados = () => { verificar() }
     window.addEventListener('biored:videos-informativos-terminados', handleVideosTerminados)
     verificar()
-
-    return () => {
-      window.removeEventListener('biored:videos-informativos-terminados', handleVideosTerminados)
-    }
+    return () => { window.removeEventListener('biored:videos-informativos-terminados', handleVideosTerminados) }
   }, [pathname])
 
   const handleCerrar = () => {
@@ -53,9 +47,7 @@ export default function JuegoProvider() {
       const usr = JSON.parse(u)
       fetch('/api/tokens/saldo?usuario_id=' + usr.id)
         .then(r => r.json())
-        .then(d => {
-          window.dispatchEvent(new CustomEvent('biored:tokens-changed', { detail: { saldo: d.saldo || 0 } }))
-        })
+        .then(d => { window.dispatchEvent(new CustomEvent('biored:tokens-changed', { detail: { saldo: d.saldo || 0 } })) })
         .catch(() => {})
     }
   }
