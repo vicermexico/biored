@@ -10,7 +10,6 @@ export default function JuegoProvider() {
   const [eligiendo, setEligiendo] = useState(false)
   const [usuarioId, setUsuarioId] = useState<string | null>(null)
   const [confeti, setConfeti] = useState(false)
-  const [palancaAbajo, setPalancaAbajo] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pathname = usePathname()
 
@@ -41,6 +40,7 @@ export default function JuegoProvider() {
           setJuego({ video_url: juegoRes.video_url, tokens: juegoRes.tokens, tipo: juegoRes.tipo })
           setTragamonedas(true)
           setEligiendo(true)
+          setConfeti(true)
         } else if (tieneJuego) {
           setJuego({ video_url: juegoRes.video_url, tokens: juegoRes.tokens, tipo: juegoRes.tipo })
         } else if (tieneTragamonedas) {
@@ -84,16 +84,6 @@ export default function JuegoProvider() {
     return () => cancelAnimationFrame(frame)
   }, [confeti])
 
-  useEffect(() => {
-    if (!eligiendo) return
-    setConfeti(true)
-    const intervalo = setInterval(() => {
-      setPalancaAbajo(true)
-      setTimeout(() => setPalancaAbajo(false), 600)
-    }, 1500)
-    return () => clearInterval(intervalo)
-  }, [eligiendo])
-
   const handleCerrarJuego = () => {
     sessionStorage.setItem('juego_visto', '1')
     setJuego(null); setTragamonedas(false); setEligiendo(false)
@@ -114,17 +104,10 @@ export default function JuegoProvider() {
         {confeti && <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, zIndex: 9998, pointerEvents: 'none' }} />}
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
           <div className="bg-gray-900 rounded-3xl w-full flex flex-col items-center gap-5" style={{ maxWidth: 360, padding: '2rem' }}>
-            <div className="flex items-center gap-4">
-              <p className="text-5xl">🎮</p>
-              <div className="flex flex-col items-center">
-                <div style={{ width: 12, height: palancaAbajo ? 90 : 50, backgroundColor: '#9ca3af', borderRadius: 8, transition: 'height 0.3s ease', margin: '0 auto', boxShadow: '2px 2px 6px rgba(0,0,0,0.5)' }} />
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: palancaAbajo ? '#b91c1c' : '#ef4444', border: '3px solid #fef08a', marginTop: 4, transition: 'all 0.3s', transform: palancaAbajo ? 'scale(0.85)' : 'scale(1)', boxShadow: '0 3px 10px rgba(0,0,0,0.5)' }} />
-              </div>
-            </div>
             <h1 className="text-2xl font-bold text-white text-center">FELICIDADES!</h1>
             <p className="text-gray-300 text-sm text-center">Tienes derecho a jugar. Elige tu juego:</p>
-            <button onClick={() => { setEligiendo(false); setTragamonedas(false) }} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-4 rounded-2xl text-lg">🎰 Ruleta</button>
-            <button onClick={() => { setEligiendo(false); setJuego(null) }} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-6 py-4 rounded-2xl text-lg">🍒 Tragamonedas</button>
+            <button onClick={() => { setEligiendo(false); setTragamonedas(false) }} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-4 rounded-2xl text-lg">Ruleta</button>
+            <button onClick={() => { setEligiendo(false); setJuego(null) }} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-6 py-4 rounded-2xl text-lg">Tragamonedas</button>
             <button onClick={handleCerrarJuego} className="text-gray-500 text-sm">Cerrar</button>
           </div>
         </div>

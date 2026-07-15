@@ -17,7 +17,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [reclamando, setReclamando] = useState(false)
   const [reclamado, setReclamado] = useState(false)
   const [confeti, setConfeti] = useState(false)
-  const [jalando, setJalando] = useState(false)
+  const [cargando, setCargando] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const confetiRef = useRef<HTMLCanvasElement>(null)
 
@@ -58,31 +58,28 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     return () => cancelAnimationFrame(frame)
   }, [confeti])
 
-  const handleJalar = async () => {
-    if (fase !== 'esperando') return
+  const handleJugar = async () => {
+    if (cargando) return
+    setCargando(true)
     const idx = tiradaActual
     setTiradaActual(prev => prev + 1)
-    setJalando(true)
-
-    setTimeout(async () => {
-      setJalando(false)
-      const esOficial = idx === tiradaOficial
-      const res = await fetch('/api/tragamonedas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usuario_id, tirada_oficial: esOficial })
-      })
-      const data = await res.json()
-      setVideoUrl(data.video_url || '')
-      setFase('reproduciendo')
-      if (data.gano) {
-        setGano(true)
-        setTokensGanados(data.tokens_ganados || 0)
-      }
-      setTimeout(() => {
-        if (videoRef.current) videoRef.current.play().catch(() => {})
-      }, 100)
-    }, 400)
+    const esOficial = idx === tiradaOficial
+    const res = await fetch('/api/tragamonedas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario_id, tirada_oficial: esOficial })
+    })
+    const data = await res.json()
+    setVideoUrl(data.video_url || '')
+    if (data.gano) {
+      setGano(true)
+      setTokensGanados(data.tokens_ganados || 0)
+    }
+    setCargando(false)
+    setFase('reproduciendo')
+    setTimeout(() => {
+      if (videoRef.current) videoRef.current.play().catch(() => handleVideoTerminado())
+    }, 100)
   }
 
   const handleVideoTerminado = () => {
@@ -116,7 +113,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
         <div className="bg-gray-900 rounded-3xl w-full overflow-hidden flex flex-col items-center gap-4" style={{ maxWidth: 380, padding: '1.5rem' }}>
 
           <div className="flex items-center justify-between w-full">
-            <h1 className="text-xl font-bold text-yellow-400">🎰 TRAGAMONEDAS</h1>
+            <h1 className="text-xl font-bold text-yellow-400">Tragamonedas</h1>
             <p className="text-gray-400 text-xs">Tirada {Math.min(tiradaActual + (fase === 'esperando' ? 1 : 0), tiradas)} de {tiradas}</p>
           </div>
 
@@ -144,12 +141,8 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
           {reclamado && <p className="text-center text-green-400 font-bold text-lg">Token acreditado!</p>}
 
           {fase === 'esperando' && (
-            <button
-              onClick={handleJalar}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl"
-              style={{ transform: jalando ? 'scale(0.95)' : 'scale(1)', transition: 'transform 0.2s' }}
-            >
-              {jalando ? '...' : 'JALAR PALANCA 🎰'}
+            <button onClick={handleJugar} disabled={cargando} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-5 rounded-2xl text-xl">
+              {cargando ? 'Cargando...' : 'JUGAR'}
             </button>
           )}
 
