@@ -10,11 +10,26 @@ const ITEM_H = 100
 const VISIBLE = 3
 const COL_W = 90
 
+function quitarFondoBlanco(img: HTMLImageElement): HTMLCanvasElement {
+  const c = document.createElement('canvas')
+  c.width = img.naturalWidth || img.width
+  c.height = img.naturalHeight || img.height
+  const ctx = c.getContext('2d')!
+  ctx.drawImage(img, 0, 0)
+  const data = ctx.getImageData(0, 0, c.width, c.height)
+  for (let i = 0; i < data.data.length; i += 4) {
+    const r = data.data[i], g = data.data[i+1], b = data.data[i+2]
+    if (r > 230 && g > 230 && b > 230) data.data[i+3] = 0
+  }
+  ctx.putImageData(data, 0, 0)
+  return c
+}
+
 export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [listo, setListo] = useState(false)
   const [tiradas, setTiradas] = useState(1)
   const [tiradaActual, setTiradaActual] = useState(0)
-  const [tirадаOficial, setTiradaOficial] = useState(-1)
+  const [tiradaOficial, setTiradaOficial] = useState(-1)
   const [girando, setGirando] = useState(false)
   const [fase, setFase] = useState<'esperando' | 'girando' | 'resultado' | 'fin'>('esperando')
   const [gano, setGano] = useState(false)
@@ -23,69 +38,71 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [reclamado, setReclamado] = useState(false)
   const [confeti, setConfeti] = useState(false)
   const [jalando, setJalando] = useState(false)
-  const [resultadoTirada, setResultadoTirada] = useState<{gano: boolean, tokens: number} | null>(null)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const confetiRef = useRef<HTMLCanvasElement>(null)
   const frameRef = useRef<number>(0)
-  const imgsCargadasRef = useRef<HTMLImageElement[]>([])
+  const imgsRef = useRef<HTMLCanvasElement[]>([])
   const colsRef = useRef([
     { y: 0, vel: 0, detenida: false },
     { y: 0, vel: 0, detenida: false },
     { y: 0, vel: 0, detenida: false },
   ])
   const resultadoRef = useRef<{ gano: boolean, tokens: number } | null>(null)
+  const tickTimerRef = useRef<number>(0)
 
   useEffect(() => {
     fetch('/api/tragamonedas').then(r => r.json()).then(cfg => {
       const t = cfg.tiradas_por_evento || 1
       setTiradas(t)
-      const oficialIdx = Math.floor(Math.random() * t)
-      setTiradaOficial(oficialIdx)
+      setTiradaOficial(Math.floor(Math.random() * t))
     })
 
     fetch('/api/productos/biored').then(r => r.json()).then(async data => {
       const fotos: string[] = data.filter((p: any) => p.foto_url).map((p: any) => p.foto_url)
       if (fotos.length === 0) return
-      const imgs = await Promise.all(fotos.map(url => new Promise<HTMLImageElement>(res => {
+      const imgs = await Promise.all(fotos.map(url => new Promise<HTMLCanvasElement>(res => {
         const img = new Image()
         img.crossOrigin = 'anonymous'
-        img.onload = () => res(img)
-        img.onerror = () => res(img)
+        img.onload = () => res(quitarFondoBlanco(img))
+        img.onerror = () => { const c = document.createElement('canvas'); c.width = 100; c.height = 100; res(c) }
         img.src = url
       })))
-      imgsCargadasRef.current = imgs
+      imgsRef.current = imgs
       setListo(true)
     })
   }, [])
 
-  const playTick = () => {
+  const playTick = useCallback(() => {
+    const now = Date.now()
+    if (now - tickTimerRef.current < 80) return
+    tickTimerRef.current = now
     try {
       const ctx = new AudioContext()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.connect(gain); gain.connect(ctx.destination)
-      osc.type = 'square'; osc.frequency.value = 300
+      osc.type = 'square'; osc.frequency.value = 400
       gain.gain.setValueAtTime(0.08, ctx.currentTime)
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
       osc.start(); osc.stop(ctx.currentTime + 0.04)
     } catch {}
-  }
+  }, [])
 
-  const playStop = () => {
+  const playStop = useCallback(() => {
     try {
       const ctx = new AudioContext()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.connect(gain); gain.connect(ctx.destination)
-      osc.type = 'sine'; osc.frequency.value = 150
-      gain.gain.setValueAtTime(0.25, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
-      osc.start(); osc.stop(ctx.currentTime + 0.2)
+      osc.type = 'sine'; osc.frequency.value = 180
+      gain.gain.setValueAtTime(0.3, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25)
+      osc.start(); osc.stop(ctx.currentTime + 0.25)
     } catch {}
-  }
+  }, [])
 
-  const playWin = () => {
+  const playWin = useCallback(() => {
     try {
       const ctx = new AudioContext()
       ;[523, 659, 784, 1047].forEach((f, i) => {
@@ -97,17 +114,18 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
         o.start(ctx.currentTime + i * 0.12); o.stop(ctx.currentTime + i * 0.12 + 0.25)
       })
     } catch {}
-  }
+  }, [])
 
   const dibujar = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    const imgs = imgsCargadasRef.current
+    const imgs = imgsRef.current
     if (imgs.length === 0) return
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = '#111827'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     colsRef.current.forEach((col, ci) => {
       const x = ci * (COL_W + 6)
@@ -122,12 +140,10 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
       for (let i = -1; i < VISIBLE + 2; i++) {
         const idx = ((Math.floor(offset / ITEM_H) + i) % total + total) % total
         const yPos = i * ITEM_H - (offset % ITEM_H)
-        if (imgs[idx]?.complete) {
-          ctx.globalCompositeOperation = 'source-over'
-          ctx.drawImage(imgs[idx], x, yPos, COL_W, ITEM_H)
-        } else {
-          ctx.fillStyle = '#1f2937'
-          ctx.fillRect(x, yPos, COL_W, ITEM_H)
+        ctx.fillStyle = '#1f2937'
+        ctx.fillRect(x, yPos, COL_W, ITEM_H)
+        if (imgs[idx]) {
+          ctx.drawImage(imgs[idx], x + 5, yPos + 5, COL_W - 10, ITEM_H - 10)
         }
       }
       ctx.restore()
@@ -139,7 +155,18 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
 
     ctx.strokeStyle = '#fbbf24'
     ctx.lineWidth = 2
+    for (let i = 0; i <= VISIBLE; i++) {
+      ctx.beginPath()
+      ctx.moveTo(0, i * ITEM_H)
+      ctx.lineTo(canvas.width, i * ITEM_H)
+      ctx.stroke()
+    }
+
+    ctx.strokeStyle = '#fbbf24'
+    ctx.lineWidth = 3
     const midY = ITEM_H * VISIBLE / 2
+    ctx.shadowColor = '#fbbf24'
+    ctx.shadowBlur = 6
     ctx.beginPath()
     ctx.moveTo(0, midY - ITEM_H / 2)
     ctx.lineTo(canvas.width, midY - ITEM_H / 2)
@@ -148,9 +175,10 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     ctx.moveTo(0, midY + ITEM_H / 2)
     ctx.lineTo(canvas.width, midY + ITEM_H / 2)
     ctx.stroke()
+    ctx.shadowBlur = 0
   }, [])
 
-  const animar = useCallback((onFin: (gano: boolean) => void) => {
+  const animar = useCallback((onFin: () => void) => {
     let prevTick = [0, 0, 0]
     let detenidas = 0
 
@@ -158,28 +186,27 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
       colsRef.current.forEach((col, i) => {
         if (col.detenida) return
         col.y += col.vel
-        const tickActual = Math.floor(col.y / ITEM_H)
-        if (tickActual !== prevTick[i]) { prevTick[i] = tickActual; if (col.vel > 3) playTick() }
-        if (col.vel > 0.5) col.vel *= 0.985
+        const tickActual = Math.floor(col.y / (ITEM_H / 4))
+        if (tickActual !== prevTick[i]) { prevTick[i] = tickActual; playTick() }
+        if (col.vel > 0.5) col.vel *= 0.984
         else if (col.vel > 0) {
           col.y = Math.round(col.y / ITEM_H) * ITEM_H
           col.vel = 0; col.detenida = true; detenidas++
           playStop()
-          if (detenidas === 3) onFin(resultadoRef.current?.gano || false)
+          if (detenidas === 3) onFin()
         }
       })
       dibujar()
       if (colsRef.current.some(c => !c.detenida)) frameRef.current = requestAnimationFrame(loop)
     }
     frameRef.current = requestAnimationFrame(loop)
-  }, [dibujar])
+  }, [dibujar, playTick, playStop])
 
-  const getRandIdx = () => Math.floor(Math.random() * imgsCargadasRef.current.length)
+  const getRandIdx = () => Math.floor(Math.random() * imgsRef.current.length)
 
   const ejecutarTirada = async (esOficial: boolean) => {
     setGirando(true)
     setFase('girando')
-
     let resultado = { gano: false, tokens: 0 }
 
     if (esOficial) {
@@ -194,10 +221,6 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
 
     resultadoRef.current = resultado
 
-    let idx0 = getRandIdx()
-    let idx1 = resultado.gano ? idx0 : (() => { let i; do { i = getRandIdx() } while (i === idx0); return i })()
-    let idx2 = resultado.gano ? idx0 : getRandIdx()
-
     colsRef.current = [
       { y: 0, vel: 22, detenida: false },
       { y: 0, vel: 25, detenida: false },
@@ -205,18 +228,16 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     ]
 
     setTimeout(() => { colsRef.current[0].vel *= 0.3 }, 2000)
-    setTimeout(() => { colsRef.current[1].vel *= 0.3 }, 2600)
-    setTimeout(() => { colsRef.current[2].vel *= 0.3 }, 3200)
+    setTimeout(() => { colsRef.current[1].vel *= 0.3 }, 2700)
+    setTimeout(() => { colsRef.current[2].vel *= 0.3 }, 3400)
 
-    animar((gano) => {
+    animar(() => {
       setGirando(false)
-      setResultadoTirada(resultado)
       setFase('resultado')
-
       if (resultado.gano) {
         setGano(true)
         setTokensGanados(resultado.tokens)
-        setTimeout(playWin, 200)
+        setTimeout(playWin, 300)
         setConfeti(true)
       }
     })
@@ -224,23 +245,15 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
 
   const handleJalar = async () => {
     if (girando || !listo || fase === 'fin') return
-    const nuevaTirada = tiradaActual
+    const idx = tiradaActual
     setTiradaActual(prev => prev + 1)
     setJalando(true)
-    setTimeout(() => {
-      setJalando(false)
-      ejecutarTirada(nuevaTirada === tirадаOficial)
-    }, 400)
+    setTimeout(() => { setJalando(false); ejecutarTirada(idx === tiradaOficial) }, 400)
   }
 
   const handleSiguiente = () => {
-    const siguiente = tiradaActual
-    if (siguiente >= tiradas) {
-      setFase('fin')
-    } else {
-      setFase('esperando')
-      setResultadoTirada(null)
-    }
+    if (tiradaActual >= tiradas) { setFase('fin'); return }
+    setFase('esperando')
   }
 
   useEffect(() => {
@@ -304,20 +317,9 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
             <p className="text-gray-400 text-xs">Tirada {Math.min(tiradaActual + 1, tiradas)} de {tiradas}</p>
           </div>
 
-          <div className="bg-gray-800 rounded-2xl p-2 border-4 border-yellow-500 w-full">
-            <canvas ref={canvasRef} style={{ display: 'block', borderRadius: 8, width: '100%' }} />
+          <div className="rounded-2xl overflow-hidden border-4 border-yellow-500 w-full">
+            <canvas ref={canvasRef} style={{ display: 'block', width: '100%' }} />
           </div>
-
-          {fase === 'fin' && !gano && (
-            <div className="fixed inset-0 z-60 flex items-center justify-center px-6" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-              <div className="bg-gray-900 rounded-3xl p-8 flex flex-col items-center gap-4 text-center">
-                <p className="text-5xl">😔</p>
-                <p className="text-2xl font-bold text-white">No ganaste esta vez</p>
-                <p className="text-gray-400 text-sm">Sigue participando, la suerte cambia</p>
-                <button onClick={onCerrar} className="bg-gray-700 text-white font-bold px-8 py-3 rounded-2xl mt-2">Seguir</button>
-              </div>
-            </div>
-          )}
 
           {gano && !reclamado && (
             <div className="w-full flex flex-col items-center gap-3">
@@ -331,12 +333,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
           {reclamado && <p className="text-center text-green-400 font-bold">Token acreditado!</p>}
 
           {fase === 'esperando' && !gano && (
-            <button
-              onClick={handleJalar}
-              disabled={girando || !listo}
-              className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-4 rounded-2xl text-lg"
-              style={{ transform: jalando ? 'scale(0.95)' : 'scale(1)', transition: 'transform 0.2s' }}
-            >
+            <button onClick={handleJalar} disabled={girando || !listo} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-4 rounded-2xl text-lg" style={{ transform: jalando ? 'scale(0.95)' : 'scale(1)', transition: 'transform 0.2s' }}>
               {listo ? 'COMENZAR' : 'Cargando...'}
             </button>
           )}
@@ -349,8 +346,19 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
 
           {fase === 'resultado' && !gano && tiradaActual >= tiradas && (
             <button onClick={() => setFase('fin')} className="w-full bg-gray-700 text-white font-bold py-3 rounded-2xl">
-              Ver resultado
+              Ver resultado final
             </button>
+          )}
+
+          {fase === 'fin' && !gano && (
+            <div className="fixed inset-0 z-60 flex items-center justify-center px-6" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
+              <div className="bg-gray-900 rounded-3xl p-8 flex flex-col items-center gap-4 text-center w-full" style={{ maxWidth: 320 }}>
+                <p className="text-5xl">😔</p>
+                <p className="text-2xl font-bold text-white">No ganaste esta vez</p>
+                <p className="text-gray-400 text-sm">Sigue participando, la suerte cambia</p>
+                <button onClick={onCerrar} className="w-full bg-red-500 text-white font-bold px-8 py-4 rounded-2xl text-lg mt-2">Seguir</button>
+              </div>
+            </div>
           )}
         </div>
       </div>
