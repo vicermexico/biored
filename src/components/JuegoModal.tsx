@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
 
-type Fase = 'inicio' | 'reproduciendo' | 'terminado'
+type Fase = 'inicio' | 'reproduciendo' | 'terminado' | 'reclamado'
 
 interface Props {
   video_url: string
@@ -24,6 +24,7 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
   }
 
   const handleReclamar = async () => {
+    if (cargando || fase === 'reclamado') return
     setCargando(true)
     try {
       const res = await fetch('/api/juego/reclamar', {
@@ -35,10 +36,12 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
       if (data.nuevoSaldo !== undefined) {
         window.dispatchEvent(new CustomEvent('biored:tokens-changed', { detail: { saldo: data.nuevoSaldo } }))
       }
-    } catch {}
-    setCargando(false)
-    setConfeti(true)
-    setTimeout(() => onCerrar(), 3000)
+      setFase('reclamado')
+      setConfeti(true)
+      setTimeout(() => onCerrar(), 2500)
+    } catch {
+      setCargando(false)
+    }
   }
 
   useEffect(() => {
@@ -123,6 +126,12 @@ export default function JuegoModal({ video_url, tokens, tipo, usuario_id, onCerr
                 </button>
               )}
             </>
+          )}
+          {fase === 'reclamado' && (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-6xl">🎉</p>
+              <h2 className="text-2xl font-bold text-white text-center">Token reclamado!</h2>
+            </div>
           )}
         </div>
       </div>
