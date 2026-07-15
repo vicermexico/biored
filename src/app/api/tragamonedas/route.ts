@@ -9,25 +9,28 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const { activo, jugadas_para_ganar, tokens_premio } = await request.json()
-  const { error } = await supabase.from('tragamonedas_config').update({ activo, jugadas_para_ganar, tokens_premio }).eq('id', 1)
+  const { activo, jugadas_para_ganar, tokens_premio, tiradas_por_evento } = await request.json()
+  const { error } = await supabase.from('tragamonedas_config').update({ activo, jugadas_para_ganar, tokens_premio, tiradas_por_evento }).eq('id', 1)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
 
 export async function POST(request: Request) {
-  const { usuario_id } = await request.json()
+  const { usuario_id, tirada_oficial } = await request.json()
   if (!usuario_id) return NextResponse.json({ error: 'Faltan datos' }, { status: 400 })
 
   const { data: config } = await supabase.from('tragamonedas_config').select('*').eq('id', 1).single()
   if (!config || !config.activo) return NextResponse.json({ error: 'Tragamonedas no activa' }, { status: 400 })
 
+  if (!tirada_oficial) {
+    return NextResponse.json({ gano: false, oficial: false })
+  }
+
   const { data: configJuego } = await supabase.from('configuracion').select('juego_por_compra_cantidad').single()
   const productosRequeridos = configJuego?.juego_por_compra_cantidad || 12
 
   const { data: pedidos } = await supabase
-    .from('pedidos')
-    .select('id')
+    .from('pedidos').select('id')
     .eq('usuario_id', usuario_id)
     .eq('estado', 'entregado')
     .eq('tipo', 'biored')
@@ -35,15 +38,13 @@ export async function POST(request: Request) {
   let totalProductos = 0
   if (pedidos && pedidos.length > 0) {
     const { data: detalles } = await supabase
-      .from('detalle_pedidos')
-      .select('cantidad')
+      .from('detalle_pedidos').select('cantidad')
       .in('pedido_id', pedidos.map((p: any) => p.id))
     totalProductos = (detalles || []).reduce((sum: number, d: any) => sum + d.cantidad, 0)
   }
 
   const { data: historial } = await supabase
-    .from('juego_historial')
-    .select('id')
+    .from('juego_historial').select('id')
     .eq('usuario_id', usuario_id)
     .in('tipo', ['compra', 'tragamonedas'])
 
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
   const tirosCorresponden = Math.floor(totalProductos / productosRequeridos)
 
   if (tirosUsados >= tirosCorresponden) {
-    return NextResponse.json({ error: 'Ya usaste tu tiro' }, { status: 400 })
+    return NextResponse.json({ error: 'Ya usaste tu tiro oficial' }, { status: 400 })
   }
 
   const jugadas_actuales = config.jugadas_actuales + 1
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
     .eq('jugadas_actuales', config.jugadas_actuales)
 
   if (updateError) {
-    return NextResponse.json({ gano: false, jugada_numero: jugadas_actuales })
+    return NextResponse.json({ gano: false, oficial: true, jugada_numero: jugadas_actuales })
   }
 
   const tokensGanados = gano ? config.tokens_premio : 0
@@ -96,5 +97,5 @@ export async function POST(request: Request) {
     jugada_numero: jugadas_actuales
   })
 
-  return NextResponse.json({ gano, tokens_ganados: tokensGanados, jugada_numero: jugadas_actuales, nuevoSaldo: gano ? nuevoSaldo : undefined })
+  return NextResponse.json({ gano, oficial: true, tokens_ganados: tokensGanados, nuevoSaldo: gano ? nuevoSaldo : undefined })
 }

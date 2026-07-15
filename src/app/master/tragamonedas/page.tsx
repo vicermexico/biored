@@ -50,10 +50,9 @@ export default function MasterTragamonedas() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-gray-500">Jugadas para ganar (global entre todos)</label>
+            <label className="text-sm text-gray-500">Jugadas globales para ganar</label>
             <input
-              type="number"
-              min={1}
+              type="number" min={1}
               value={config.jugadas_para_ganar}
               onChange={e => setConfig({ ...config, jugadas_para_ganar: parseInt(e.target.value) || 1 })}
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500"
@@ -61,10 +60,20 @@ export default function MasterTragamonedas() {
           </div>
 
           <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-500">Tiradas por evento (intentos por usuario)</label>
+            <input
+              type="number" min={1} max={10}
+              value={config.tiradas_por_evento || 1}
+              onChange={e => setConfig({ ...config, tiradas_por_evento: parseInt(e.target.value) || 1 })}
+              className="border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500"
+            />
+            <p className="text-xs text-gray-400">Solo la tirada oficial cuenta para el contador global</p>
+          </div>
+
+          <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-500">Tokens del premio</label>
             <input
-              type="number"
-              min={1}
+              type="number" min={1}
               value={config.tokens_premio}
               onChange={e => setConfig({ ...config, tokens_premio: parseInt(e.target.value) || 1 })}
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500"
@@ -82,4 +91,5 @@ export default function MasterTragamonedas() {
       </div>
     </main>
   )
+}
 }
