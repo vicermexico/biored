@@ -6,27 +6,28 @@ interface Props {
   onCerrar: () => void
 }
 
-const VELOCIDAD = 80
-const GIROS_ANTES_PARAR = [20, 25, 30]
-
 export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [productos, setProductos] = useState<string[]>([])
-  const [columnas, setColumnas] = useState<string[][]>([[], [], []])
+  const [columnas, setColumnas] = useState<string[][]>([[''], [''], ['']])
   const [girando, setGirando] = useState(false)
-  const [resultado, setResultado] = useState<string[] | null>(null)
+  const [jugado, setJugado] = useState(false)
   const [gano, setGano] = useState<boolean | null>(null)
   const [tokensGanados, setTokensGanados] = useState(0)
+  const [reclamando, setReclamando] = useState(false)
+  const [reclamado, setReclamado] = useState(false)
   const [confeti, setConfeti] = useState(false)
   const [jalando, setJalando] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const intervalRef = useRef<any[]>([null, null, null])
-  const contadorRef = useRef([0, 0, 0])
-  const resultadoFinalRef = useRef<string[]>([])
+  const intervalRefs = useRef<any[]>([null, null, null])
+  const resultadoRef = useRef<string[]>([])
 
   useEffect(() => {
     fetch('/api/productos/biored').then(r => r.json()).then(data => {
       const fotos = data.filter((p: any) => p.foto_url).map((p: any) => p.foto_url)
-      if (fotos.length > 0) setProductos(fotos)
+      if (fotos.length > 0) {
+        setProductos(fotos)
+        setColumnas([[fotos[0]], [fotos[0]], [fotos[0]]])
+      }
     })
   }, [])
 
@@ -77,29 +78,22 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const getRandom = () => productos[Math.floor(Math.random() * productos.length)]
 
   const girarColumna = (col: number, imagenFinal: string, giros: number, onDone: () => void) => {
-    contadorRef.current[col] = 0
-    intervalRef.current[col] = setInterval(() => {
-      contadorRef.current[col]++
-      setColumnas(prev => {
-        const nueva = [...prev]
-        if (contadorRef.current[col] >= giros) {
-          nueva[col] = [imagenFinal]
-          clearInterval(intervalRef.current[col])
-          onDone()
-        } else {
-          nueva[col] = [getRandom()]
-        }
-        return nueva
-      })
-    }, VELOCIDAD)
+    let contador = 0
+    intervalRefs.current[col] = setInterval(() => {
+      contador++
+      if (contador >= giros) {
+        clearInterval(intervalRefs.current[col])
+        setColumnas(prev => { const n = [...prev]; n[col] = [imagenFinal]; return n })
+        onDone()
+      } else {
+        setColumnas(prev => { const n = [...prev]; n[col] = [getRandom()]; return n })
+      }
+    }, 80)
   }
 
   const handleJalar = async () => {
-    if (girando || productos.length === 0) return
+    if (girando || jugado || productos.length === 0) return
     setJalando(true)
-    setResultado(null)
-    setGano(null)
-
     setTimeout(async () => {
       setJalando(false)
       setGirando(true)
@@ -111,8 +105,14 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
       })
       const data = await res.json()
 
-      let img1: string, img2: string, img3: string
+      if (data.error) {
+        setGirando(false)
+        setJugado(true)
+        setGano(false)
+        return
+      }
 
+      let img1: string, img2: string, img3: string
       if (data.gano) {
         const img = getRandom()
         img1 = img2 = img3 = img
@@ -123,98 +123,119 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
         img3 = getRandom()
       }
 
-      resultadoFinalRef.current = [img1, img2, img3]
-
+      resultadoRef.current = [img1, img2, img3]
       let terminadas = 0
+
       const onDone = () => {
         terminadas++
         if (terminadas === 3) {
-          setResultado([img1, img2, img3])
           setGirando(false)
+          setJugado(true)
           if (data.gano) {
             setGano(true)
-            setConfeti(true)
-            window.dispatchEvent(new CustomEvent('biored:tokens-changed', { detail: { saldo: data.tokens_ganados } }))
           } else {
             setGano(false)
           }
         }
       }
 
-      girarColumna(0, img1, GIROS_ANTES_PARAR[0], onDone)
-      setTimeout(() => girarColumna(1, img2, GIROS_ANTES_PARAR[1], onDone), 300)
-      setTimeout(() => girarColumna(2, img3, GIROS_ANTES_PARAR[2], onDone), 600)
-    }, 400)
+      girarColumna(0, img1, 20, onDone)
+      setTimeout(() => girarColumna(1, img2, 25, onDone), 300)
+      setTimeout(() => girarColumna(2, img3, 30, onDone), 600)
+    }, 500)
+  }
+
+  const handleReclamar = async () => {
+    setReclamando(true)
+    setConfeti(true)
+    if (tokensGanados > 0) {
+      const u = localStorage.getItem('usuario')
+      if (u) {
+        const usr = JSON.parse(u)
+        fetch('/api/tokens/saldo?usuario_id=' + usr.id).then(r => r.json()).then(d => {
+          window.dispatchEvent(new CustomEvent('biored:tokens-changed', { detail: { saldo: d.saldo || 0 } }))
+        })
+      }
+    }
+    setTimeout(() => { setReclamado(true); setTimeout(() => onCerrar(), 1500) }, 2000)
   }
 
   return (
     <>
       {confeti && <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }} />}
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <div className="bg-gray-900 rounded-3xl w-full flex flex-col items-center gap-6 overflow-hidden" style={{ maxWidth: 420, padding: '2rem' }}>
-          <h1 className="text-2xl font-bold text-white text-center">TRAGAMONEDAS</h1>
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
+        <div className="relative bg-gray-900 rounded-3xl w-full overflow-hidden" style={{ maxWidth: 400, padding: '1.5rem' }}>
 
-          <div className="flex gap-3 w-full justify-center">
+          <h1 className="text-xl font-bold text-yellow-400 text-center mb-4">🎰 TRAGAMONEDAS</h1>
+
+          <div className="flex gap-2 justify-center mb-4">
             {[0, 1, 2].map(col => (
-              <div key={col} className="bg-gray-800 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-gray-600" style={{ width: 90, height: 90 }}>
-                {columnas[col][0] ? (
-                  <img src={columnas[col][0]} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl">❓</span>
-                )}
+              <div key={col} className="bg-white rounded-xl overflow-hidden border-4 border-yellow-400 flex flex-col items-center justify-center" style={{ width: 85, height: 240 }}>
+                {columnas[col].map((img, i) => (
+                  <img key={i} src={img || ''} className="w-full object-cover" style={{ height: 240 }} />
+                ))}
               </div>
             ))}
+
+            <div className="flex flex-col items-center justify-center ml-2" style={{ minWidth: 48 }}>
+              <div
+                onClick={handleJalar}
+                style={{ cursor: girando || jugado ? 'not-allowed' : 'pointer', userSelect: 'none' }}
+              >
+                <div style={{
+                  width: 14,
+                  height: jalando ? 100 : 60,
+                  background: 'linear-gradient(to bottom, #silver, #aaa)',
+                  backgroundColor: '#aaa',
+                  borderRadius: 8,
+                  margin: '0 auto',
+                  transition: 'height 0.25s ease',
+                  boxShadow: '2px 2px 6px rgba(0,0,0,0.5)'
+                }} />
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  background: jalando ? '#b91c1c' : '#ef4444',
+                  border: '3px solid #fef08a',
+                  margin: '4px auto 0',
+                  transition: 'background 0.2s, transform 0.2s',
+                  transform: jalando ? 'scale(0.9)' : 'scale(1)',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.5)'
+                }} />
+              </div>
+              <p className="text-yellow-400 text-xs mt-2 text-center" style={{ fontSize: 10 }}>
+                {girando ? 'Girando' : jugado ? '' : 'Jalar'}
+              </p>
+            </div>
           </div>
 
-          {gano === true && (
-            <div className="text-center">
-              <p className="text-3xl font-bold text-yellow-400">GANASTE!</p>
-              <p className="text-white text-sm mt-1">+{tokensGanados} tokens acreditados</p>
+          {jugado && gano === true && !reclamado && (
+            <div className="flex flex-col items-center gap-3 mt-2">
+              <p className="text-2xl font-bold text-yellow-400 text-center">GANASTE {tokensGanados} tokens!</p>
+              <button
+                onClick={handleReclamar}
+                disabled={reclamando}
+                className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-4 rounded-2xl text-lg"
+              >
+                {reclamando ? 'Reclamando...' : 'Reclamar mis tokens!'}
+              </button>
             </div>
           )}
-          {gano === false && (
-            <p className="text-gray-400 text-sm text-center">Sigue intentando...</p>
+
+          {jugado && gano === false && (
+            <div className="flex flex-col items-center gap-3 mt-2">
+              <p className="text-gray-400 text-sm text-center">No ganaste esta vez. Sigue comprando para jugar de nuevo.</p>
+              <button onClick={onCerrar} className="w-full bg-gray-700 text-white font-bold py-3 rounded-2xl">
+                Cerrar
+              </button>
+            </div>
           )}
 
-          <div className="flex flex-col items-center gap-3 w-full">
-            <div
-              onClick={handleJalar}
-              style={{
-                cursor: girando ? 'not-allowed' : 'pointer',
-                userSelect: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <div style={{
-                width: 16,
-                height: jalando ? 80 : 50,
-                background: '#ef4444',
-                borderRadius: 8,
-                transition: 'height 0.2s ease',
-                margin: '0 auto'
-              }} />
-              <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: '50%',
-                background: jalando ? '#dc2626' : '#ef4444',
-                border: '3px solid #fff',
-                transition: 'background 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
-              }} />
-            </div>
-            <p className="text-gray-400 text-xs">
-              {girando ? 'Girando...' : 'Toca la palanca'}
-            </p>
-          </div>
-
-          <button onClick={onCerrar} className="text-gray-500 text-sm">
-            Cerrar
-          </button>
+          {reclamado && (
+            <p className="text-center text-green-400 font-bold mt-2">Token acreditado!</p>
+          )}
         </div>
       </div>
     </>
