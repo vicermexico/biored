@@ -13,15 +13,10 @@ export async function GET(request: Request) {
   const video_url = config.juego_video_url || ''
   const tokens = config.juego_tokens || 0
 
-  // Condicion 1: por compra acumulada de productos
   if (config.juego_por_compra_activo) {
     const cantidad_requerida = config.juego_por_compra_cantidad || 0
+    if (!cantidad_requerida) return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
 
-    if (!cantidad_requerida) {
-      return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
-    }
-
-    // Total de productos entregados del usuario
     const { data: pedidos } = await supabase
       .from('pedidos')
       .select('id')
@@ -38,22 +33,20 @@ export async function GET(request: Request) {
       totalProductos = (detalles || []).reduce((sum: number, d: any) => sum + d.cantidad, 0)
     }
 
-    // Cuantas ruletas ya se dieron por compra
     const { data: historial } = await supabase
       .from('juego_historial')
       .select('id')
       .eq('usuario_id', usuario_id)
-      .eq('tipo', 'compra')
+      .in('tipo', ['compra', 'tragamonedas'])
 
-    const ruletasDadas = historial?.length || 0
-    const ruletasCorresponden = Math.floor(totalProductos / cantidad_requerida)
+    const tirosUsados = historial?.length || 0
+    const tirosCorresponden = Math.floor(totalProductos / cantidad_requerida)
 
-    if (ruletasCorresponden > ruletasDadas) {
+    if (tirosCorresponden > tirosUsados) {
       return NextResponse.json({ aplica: true, tipo: 'compra', video_url, tokens })
     }
   }
 
-  // Condicion 2: por invitado que compra por primera vez
   if (config.juego_por_invitado_activo) {
     const { data: yaReclamado } = await supabase
       .from('juego_historial')
