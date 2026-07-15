@@ -9,7 +9,6 @@ interface Props {
 export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [tiradas, setTiradas] = useState(1)
   const [tiradaActual, setTiradaActual] = useState(0)
-  const [tiradaOficial, setTiradaOficial] = useState(-1)
   const [fase, setFase] = useState<'esperando' | 'reproduciendo' | 'resultado' | 'fin'>('esperando')
   const [gano, setGano] = useState(false)
   const [tokensGanados, setTokensGanados] = useState(0)
@@ -25,7 +24,6 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     fetch('/api/tragamonedas').then(r => r.json()).then(cfg => {
       const t = cfg.tiradas_por_evento || 1
       setTiradas(t)
-      setTiradaOficial(Math.floor(Math.random() * t))
     })
   }, [])
 
@@ -63,7 +61,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     setCargando(true)
     const idx = tiradaActual
     setTiradaActual(prev => prev + 1)
-    const esOficial = idx === tiradaOficial
+    const esOficial = idx === tiradas - 1
     const res = await fetch('/api/tragamonedas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
