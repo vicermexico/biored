@@ -33,6 +33,7 @@ export default function Dashboard() {
         if (d.length > 0) {
           setVideos(d)
           setMostrarVideos(true)
+          sessionStorage.setItem('videos_informativos_activos', '1')
         }
       }).catch(() => {})
     }
@@ -41,6 +42,8 @@ export default function Dashboard() {
   const handleTerminarVideos = () => {
     setMostrarVideos(false)
     if (usuario) sessionStorage.setItem('videos_vistos_' + usuario.id, '1')
+    sessionStorage.removeItem('videos_informativos_activos')
+    window.dispatchEvent(new CustomEvent('biored:videos-informativos-terminados'))
   }
 
   const handleSalir = () => {

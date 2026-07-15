@@ -11,22 +11,38 @@ export default function JuegoProvider() {
   useEffect(() => {
     const rutasPublicas = ['/', '/login', '/registro']
     if (rutasPublicas.includes(pathname)) return
-
     const u = localStorage.getItem('usuario')
     if (!u) return
     const usr = JSON.parse(u)
     setUsuarioId(usr.id)
     if (sessionStorage.getItem('juego_visto')) return
-    fetch('/api/juego/verificar?usuario_id=' + usr.id)
-      .then(r => r.json())
-      .then(d => {
-        if (d.aplica) {
-          setTimeout(() => {
-            setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo })
-          }, 3000)
-        }
-      })
-      .catch(() => {})
+
+    const verificar = () => {
+      if (sessionStorage.getItem('videos_informativos_activos')) return
+      fetch('/api/juego/verificar?usuario_id=' + usr.id)
+        .then(r => r.json())
+        .then(d => {
+          if (d.aplica) {
+            setTimeout(() => {
+              if (!sessionStorage.getItem('videos_informativos_activos')) {
+                setJuego({ video_url: d.video_url, tokens: d.tokens, tipo: d.tipo })
+              }
+            }, 3000)
+          }
+        })
+        .catch(() => {})
+    }
+
+    const handleVideosTerminados = () => {
+      verificar()
+    }
+
+    window.addEventListener('biored:videos-informativos-terminados', handleVideosTerminados)
+    verificar()
+
+    return () => {
+      window.removeEventListener('biored:videos-informativos-terminados', handleVideosTerminados)
+    }
   }, [pathname])
 
   const handleCerrar = () => {
@@ -38,9 +54,7 @@ export default function JuegoProvider() {
       fetch('/api/tokens/saldo?usuario_id=' + usr.id)
         .then(r => r.json())
         .then(d => {
-          window.dispatchEvent(
-            new CustomEvent('biored:tokens-changed', { detail: { saldo: d.saldo || 0 } })
-          )
+          window.dispatchEvent(new CustomEvent('biored:tokens-changed', { detail: { saldo: d.saldo || 0 } }))
         })
         .catch(() => {})
     }
