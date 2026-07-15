@@ -60,7 +60,7 @@ export default function MasterTragamonedas() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-gray-500">Tiradas por evento (intentos por usuario)</label>
+            <label className="text-sm text-gray-500">Tiradas por evento</label>
             <input
               type="number" min={1} max={10}
               value={config.tiradas_por_evento || 1}
@@ -91,5 +91,4 @@ export default function MasterTragamonedas() {
       </div>
     </main>
   )
-}
 }
