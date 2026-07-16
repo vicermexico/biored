@@ -22,8 +22,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
 
   useEffect(() => {
     fetch('/api/tragamonedas').then(r => r.json()).then(cfg => {
-      const t = cfg.tiradas_por_evento || 1
-      setTiradas(t)
+      setTiradas(cfg.tiradas_por_evento || 1)
     })
   }, [])
 
@@ -56,7 +55,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     return () => cancelAnimationFrame(frame)
   }, [confeti])
 
-  const handleJugar = async () => {
+  const cargarVideo = async () => {
     if (cargando) return
     setCargando(true)
     const idx = tiradaActual
@@ -74,10 +73,14 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
       setTokensGanados(data.tokens_ganados || 0)
     }
     setCargando(false)
-    setFase('reproduciendo')
-    setTimeout(() => {
-      if (videoRef.current) videoRef.current.play().catch(() => handleVideoTerminado())
-    }, 100)
+    setFase('listo')
+  }
+
+  const handleJugar = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => handleVideoTerminado())
+      setFase('reproduciendo')
+    }
   }
 
   const handleVideoTerminado = () => {
@@ -88,6 +91,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const handleSiguiente = () => {
     if (tiradaActual >= tiradas) { setFase('fin'); return }
     setVideoUrl('')
+    setGano(false)
     setFase('esperando')
   }
 
@@ -115,7 +119,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
             <p className="text-gray-400 text-xs">Tirada {Math.min(tiradaActual + (fase === 'esperando' ? 1 : 0), tiradas)} de {tiradas}</p>
           </div>
 
-          {fase === 'reproduciendo' && videoUrl && (
+          {(fase === 'listo' || fase === 'reproduciendo' || fase === 'resultado') && videoUrl && (
             <video
               ref={videoRef}
               src={videoUrl}
@@ -139,8 +143,14 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
           {reclamado && <p className="text-center text-green-400 font-bold text-lg">Token acreditado!</p>}
 
           {fase === 'esperando' && (
-            <button onClick={handleJugar} disabled={cargando} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-5 rounded-2xl text-xl">
+            <button onClick={cargarVideo} disabled={cargando} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-5 rounded-2xl text-xl">
               {cargando ? 'Cargando...' : 'JUGAR'}
+            </button>
+          )}
+
+          {fase === 'listo' && (
+            <button onClick={handleJugar} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl">
+              JUGAR
             </button>
           )}
 
