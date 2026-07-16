@@ -80,7 +80,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     setFase('listo')
   }
 
-  const handlePlay = () => {
+  const handleGirar = () => {
     setFase('reproduciendo')
     setTimeout(() => {
       if (videoRef.current) videoRef.current.play().catch(() => handleVideoTerminado())
@@ -112,6 +112,8 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     setTimeout(() => { setReclamado(true); setTimeout(() => onCerrar(), 1500) }, 1500)
   }
 
+  const numeroJuego = Math.min(tiradaActual + (fase === 'esperando' ? 1 : 0), tiradas)
+
   return (
     <>
       {confeti && <canvas ref={confetiRef} style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }} />}
@@ -119,21 +121,50 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
         <div className="bg-gray-900 rounded-3xl w-full overflow-hidden flex flex-col items-center gap-4" style={{ maxWidth: 380, padding: '1.5rem' }}>
 
-          <div className="flex items-center justify-between w-full">
-            <h1 className="text-xl font-bold text-yellow-400">Tragamonedas</h1>
-            <p className="text-gray-400 text-xs">Tirada {Math.min(tiradaActual + (fase === 'esperando' ? 1 : 0), tiradas)} de {tiradas}</p>
-          </div>
+          <h1 className="text-xl font-bold text-yellow-400 w-full text-left">Tragamonedas</h1>
 
-          {(fase === 'listo' || fase === 'reproduciendo' || fase === 'resultado') && videoUrl && (
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="w-full rounded-2xl"
-              style={{ maxHeight: '55vh', pointerEvents: 'none' }}
-              playsInline
-              disablePictureInPicture
-              onEnded={handleVideoTerminado}
-            />
+          {fase === 'esperando' && (
+            <>
+              <p className="text-white font-bold text-lg w-full text-left">Juego {numeroJuego}</p>
+              <button onClick={cargarVideo} disabled={cargando} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-5 rounded-2xl text-xl">
+                {cargando ? 'Cargando...' : 'Girar'}
+              </button>
+            </>
+          )}
+
+          {fase === 'listo' && (
+            <>
+              <p className="text-white font-bold text-lg w-full text-left">Juego {tiradaActual}</p>
+              {videoUrl && (
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="w-full rounded-2xl"
+                  style={{ maxHeight: '50vh', pointerEvents: 'none' }}
+                  playsInline
+                  disablePictureInPicture
+                  onEnded={handleVideoTerminado}
+                />
+              )}
+              <button onClick={handleGirar} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl">
+                Girar
+              </button>
+            </>
+          )}
+
+          {fase === 'reproduciendo' && videoUrl && (
+            <>
+              <p className="text-white font-bold text-lg w-full text-left">Juego {tiradaActual}</p>
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                className="w-full rounded-2xl"
+                style={{ maxHeight: '50vh', pointerEvents: 'none' }}
+                playsInline
+                disablePictureInPicture
+                onEnded={handleVideoTerminado}
+              />
+            </>
           )}
 
           {fase === 'resultado' && gano && !reclamado && (
@@ -147,21 +178,9 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
 
           {reclamado && <p className="text-center text-green-400 font-bold text-lg">Token acreditado!</p>}
 
-          {fase === 'esperando' && (
-            <button onClick={cargarVideo} disabled={cargando} className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-5 rounded-2xl text-xl">
-              {cargando ? 'Cargando...' : 'JUGAR'}
-            </button>
-          )}
-
-          {fase === 'listo' && (
-            <button onClick={handlePlay} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl">
-              ▶ Play
-            </button>
-          )}
-
           {fase === 'resultado' && !gano && tiradaActual < tiradas && (
-            <button onClick={handleSiguiente} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-2xl text-lg">
-              Siguiente tirada →
+            <button onClick={handleSiguiente} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl">
+              Girar
             </button>
           )}
 
