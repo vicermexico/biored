@@ -6,10 +6,12 @@ interface Props {
   onCerrar: () => void
 }
 
+type Fase = 'esperando' | 'listo' | 'reproduciendo' | 'resultado' | 'fin'
+
 export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [tiradas, setTiradas] = useState(1)
   const [tiradaActual, setTiradaActual] = useState(0)
-  const [fase, setFase] = useState<'esperando' | 'reproduciendo' | 'resultado' | 'fin'>('esperando')
+  const [fase, setFase] = useState<Fase>('esperando')
   const [gano, setGano] = useState(false)
   const [tokensGanados, setTokensGanados] = useState(0)
   const [videoUrl, setVideoUrl] = useState('')
@@ -19,6 +21,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   const [cargando, setCargando] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const confetiRef = useRef<HTMLCanvasElement>(null)
+  const ganoRef = useRef(false)
 
   useEffect(() => {
     fetch('/api/tragamonedas').then(r => r.json()).then(cfg => {
@@ -68,6 +71,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     })
     const data = await res.json()
     setVideoUrl(data.video_url || '')
+    ganoRef.current = data.gano || false
     if (data.gano) {
       setGano(true)
       setTokensGanados(data.tokens_ganados || 0)
@@ -77,21 +81,22 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
   }
 
   const handleJugar = () => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => handleVideoTerminado())
-      setFase('reproduciendo')
-    }
+    setFase('reproduciendo')
+    setTimeout(() => {
+      if (videoRef.current) videoRef.current.play().catch(() => handleVideoTerminado())
+    }, 50)
   }
 
   const handleVideoTerminado = () => {
     setFase('resultado')
-    if (gano) setConfeti(true)
+    if (ganoRef.current) setConfeti(true)
   }
 
   const handleSiguiente = () => {
     if (tiradaActual >= tiradas) { setFase('fin'); return }
     setVideoUrl('')
     setGano(false)
+    ganoRef.current = false
     setFase('esperando')
   }
 
