@@ -80,7 +80,7 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
     setFase('listo')
   }
 
-  const handleJugar = () => {
+  const handlePlay = () => {
     setFase('reproduciendo')
     setTimeout(() => {
       if (videoRef.current) videoRef.current.play().catch(() => handleVideoTerminado())
@@ -154,8 +154,8 @@ export default function TragamonedasModal({ usuario_id, onCerrar }: Props) {
           )}
 
           {fase === 'listo' && (
-            <button onClick={handleJugar} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl">
-              JUGAR
+            <button onClick={handlePlay} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-5 rounded-2xl text-xl">
+              ▶ Play
             </button>
           )}
 
