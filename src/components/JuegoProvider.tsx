@@ -28,11 +28,11 @@ export default function JuegoProvider() {
 
       const [juegoRes, tragaRes] = await Promise.all([
         fetch('/api/juego/verificar?usuario_id=' + usr.id).then(r => r.json()).catch(() => ({ aplica: false })),
-        fetch('/api/tragamonedas').then(r => r.json()).catch(() => ({ activo: false }))
+        fetch('/api/juego/verificar-tragamonedas?usuario_id=' + usr.id).then(r => r.json()).catch(() => ({ aplica: false }))
       ])
 
       const tieneJuego = juegoRes.aplica
-      const tieneTragamonedas = tragaRes.activo
+      const tieneTragamonedas = tragaRes.aplica
 
       setTimeout(() => {
         if (sessionStorage.getItem('videos_informativos_activos')) return
