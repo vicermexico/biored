@@ -40,7 +40,7 @@ export default function MasterPedidos() {
       </div>
 
       <div className="px-6 py-4 flex flex-col gap-3">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {['hoy', 'semana', 'mes', 'todos'].map(f => (
             <button
               key={f}
@@ -54,7 +54,7 @@ export default function MasterPedidos() {
 
         <input
           type="text"
-          placeholder="Buscar por nombre, celular o ID..."
+          placeholder="Buscar por nombre, celular..."
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
           className="border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500 bg-white"
@@ -85,9 +85,11 @@ export default function MasterPedidos() {
               <div className="border-t border-gray-100 pt-2 flex flex-col gap-1">
                 {(p.items || []).map((item: any, i: number) => (
                   <div key={i} className="flex justify-between text-sm">
-                    <span className="text-gray-700">{item.nombre} x{item.cantidad}</span>
+                    <span className="text-gray-700">{item.nombre_producto} x{item.cantidad}</span>
                     <span className="text-gray-500">
-                      {p.tipo === 'biotokens' ? `${item.precio_tokens * item.cantidad} tokens` : `$${(item.precio * item.cantidad).toFixed(2)}`}
+                      {p.tipo === 'biotokens'
+                        ? `${(item.precio_tokens_unitario || 0) * item.cantidad} tokens`
+                        : `$${((item.precio_unitario || 0) * item.cantidad).toFixed(2)}`}
                     </span>
                   </div>
                 ))}
