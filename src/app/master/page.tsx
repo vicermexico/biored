@@ -69,6 +69,12 @@ export default function Master() {
         {mensaje && <p className="text-center text-sm text-gray-600">{mensaje}</p>}
 
         <div className="flex flex-col gap-3 mt-2">
+          <Link href="/master/pedidos">
+            <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
+              <p className="font-medium text-gray-800">Pedidos</p>
+              <span className="text-gray-300">›</span>
+            </div>
+          </Link>
           <Link href="/master/catalogo">
             <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
               <p className="font-medium text-gray-800">Catalogo BIORED</p>
